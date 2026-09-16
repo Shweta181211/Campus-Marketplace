@@ -5,6 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "server": "npm --prefix server run dev",
+    "server:start": "npm --prefix server start",
+    "seed": "npm --prefix server run seed",
+    "test:api": "npm --prefix server test",
+    "ml:train": "python3 ml-service/training/generate_seed.py && python3 ml-service/training/train_price_model.py",
+    "export-training": "npm --prefix server run export-training",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview"

@@ -1,0 +1,17 @@
+{
+  "validation": {
+    "MAE": 721.04,
+    "RMSE": 1723.94,
+    "R2": 0.953
+  },
+  "test": {
+    "MAE": 991.68,
+    "RMSE": 3932.21,
+    "R2": 0.623
+  },
+  "n_train": 196,
+  "n_val": 42,
+  "n_test": 42,
+  "trainedOn": "seed_listings.csv synthetic campus data \u2014 not live user trades",
+  "model": "RandomForestRegressor"
+}

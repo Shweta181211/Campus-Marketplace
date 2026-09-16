@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Poppins", sans-serif;
+  --font-sans: "Inter", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+
+  --color-paper: #FBF6EC;
+  --color-paper-card: #FFFDF8;
+  --color-ink: #2B2621;
+  --color-ink-soft: #6B6355;
+  --color-line: #E4DCC8;
+
+  --color-tape-sky: #6EC6E8;
+  --color-tape-coral: #FF6F59;
+  --color-tape-yellow: #FFD24D;
+  --color-tape-moss: #7BC67E;
+
+  --color-sky-bg: #EAF6FB;
+  --color-sky-ink: #185FA5;
+  --color-coral-bg: #FFF0ED;
+  --color-coral-ink: #B5401E;
+  --color-yellow-bg: #FFF7E0;
+  --color-yellow-ink: #B5760F;
+  --color-moss-bg: #EEF6EC;
+  --color-moss-ink: #3B6D11;
+  --color-pink-bg: #FDEEF3;
+  --color-pink-ink: #99355A;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  background-image:
+    radial-gradient(var(--color-line) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line) transparent;
+}
+
+.tape {
+  opacity: 0.88;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

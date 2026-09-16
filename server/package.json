@@ -1,0 +1,26 @@
+{
+  "name": "campus-marketplace-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch index.js",
+    "start": "node index.js",
+    "seed": "node seed.js",
+    "test": "node --test tests/api.test.js",
+    "export-training": "node scripts/exportTrainingData.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "google-auth-library": "^9.15.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb-memory-server": "^10.1.4",
+    "mongoose": "^8.12.1",
+    "nodemailer": "^6.10.0",
+    "razorpay": "^2.9.6"
+  }
+}
