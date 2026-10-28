@@ -1,0 +1,281 @@
+category,brand,originalPrice,ageMonths,condition,demand,listingType,soldPrice
+books,Pearson,804,7,New,23,lend,27.0
+cycles,Firefox,8012,14,Like New,37,sale,5352.0
+electronics,HP,71882,5,Good,95,sale,44808.0
+lab,Generic,322,5,Fair,47,sale,127.0
+furniture,IKEA,5331,1,New,91,sale,4864.0
+hostel,Decathlon,5523,44,Like New,89,lend,86.0
+notes,Handwritten,309,37,Good,55,sale,116.0
+other,Yonex,176,48,Fair,40,sale,34.0
+books,Pearson,498,17,New,39,sale,332.0
+cycles,Firefox,9514,6,Like New,31,sale,6434.0
+electronics,Apple,47452,22,Good,53,lend,936.0
+lab,Omega,3188,29,Fair,88,sale,916.0
+furniture,Local,7955,24,New,30,sale,5065.0
+hostel,Croma,6994,40,Like New,66,sale,2982.0
+notes,Handwritten,115,2,Good,49,sale,74.0
+other,Quechua,476,14,Fair,32,lend,15
+books,Pearson,614,40,New,66,sale,279.0
+cycles,Firefox,9820,13,Like New,54,sale,6832.0
+electronics,Casio,9758,38,Good,41,sale,3258.0
+lab,Rotring,1202,10,Fair,79,sale,489.0
+furniture,Nilkamal,7980,40,New,91,lend,154.0
+hostel,Pigeon,2856,3,Like New,49,sale,2309.0
+notes,Handwritten,241,25,Good,54,sale,94.0
+other,Local,3890,36,Fair,60,sale,944.0
+books,Pearson,661,25,New,78,sale,411.0
+cycles,Firefox,6287,15,Like New,91,lend,176.0
+electronics,HP,77022,27,Good,94,sale,34274.0
+lab,Generic,1098,8,Fair,85,sale,477.0
+furniture,IKEA,6591,3,New,34,sale,5187.0
+hostel,Decathlon,1510,43,Like New,74,sale,611.0
+notes,Handwritten,277,24,Good,79,lend,15
+other,Yonex,2416,0,Fair,34,sale,1098.0
+books,Pearson,699,48,New,54,sale,293.0
+cycles,Firefox,9573,7,Like New,57,sale,6827.0
+electronics,Apple,59870,0,Good,53,sale,41571.0
+lab,Omega,3320,11,Fair,84,lend,61.0
+furniture,Local,7531,40,New,58,sale,3961.0
+hostel,Croma,4358,38,Like New,45,sale,1678.0
+notes,Handwritten,162,34,Good,87,sale,70.0
+other,Quechua,2603,20,Fair,82,sale,838.0
+books,Pearson,521,19,New,50,lend,15
+cycles,Firefox,13295,5,Like New,30,sale,9879.0
+electronics,Casio,9471,48,Good,88,sale,2850.0
+lab,Rotring,725,42,Fair,80,sale,190.0
+furniture,Nilkamal,1752,16,New,87,sale,1524.0
+hostel,Pigeon,3666,13,Like New,89,lend,110.0
+notes,Handwritten,182,45,Good,59,sale,52.0
+other,Local,2901,41,Fair,67,sale,676.0
+books,Pearson,679,28,New,35,sale,378.0
+cycles,Firefox,5049,21,Like New,22,sale,2840.0
+electronics,HP,30561,37,Good,48,lend,370.0
+lab,Generic,3099,40,Fair,27,sale,647.0
+furniture,IKEA,7817,2,New,62,sale,6447.0
+hostel,Decathlon,2149,17,Like New,82,sale,1322.0
+notes,Handwritten,147,46,Good,93,sale,45.0
+other,Yonex,1145,30,Fair,72,lend,15
+books,Pearson,249,42,New,75,sale,115.0
+cycles,Firefox,10735,29,Like New,26,sale,5414.0
+electronics,Apple,13299,3,Good,71,sale,8736.0
+lab,Omega,3479,6,Fair,51,sale,1348.0
+furniture,Local,4793,28,New,37,lend,112.0
+hostel,Croma,2481,29,Like New,51,sale,1378.0
+notes,Handwritten,118,28,Good,90,sale,47.0
+other,Quechua,2821,34,Fair,21,sale,788.0
+books,Pearson,392,10,New,72,sale,330.0
+cycles,Firefox,7502,25,Like New,27,lend,144.0
+electronics,Casio,682,24,Good,53,sale,334.0
+lab,Rotring,3415,29,Fair,56,sale,995.0
+furniture,Nilkamal,6384,35,New,82,sale,3324.0
+hostel,Pigeon,2630,13,Like New,27,sale,1683.0
+notes,Handwritten,357,3,Good,60,lend,15
+other,Local,2542,30,Fair,84,sale,861.0
+books,Pearson,693,10,New,27,sale,594.0
+cycles,Firefox,5312,11,Like New,28,sale,3517.0
+electronics,HP,31228,25,Good,35,sale,14540.0
+lab,Generic,2533,15,Fair,94,lend,42.0
+furniture,IKEA,5473,5,New,73,sale,5138.0
+hostel,Decathlon,4830,33,Like New,60,sale,2563.0
+notes,Handwritten,184,42,Good,60,sale,54.0
+other,Yonex,1771,8,Fair,58,sale,724.0
+books,Pearson,224,0,New,78,lend,15
+cycles,Firefox,13224,6,Like New,29,sale,9253.0
+electronics,Apple,66707,16,Good,36,sale,35859.0
+lab,Omega,3808,4,Fair,51,sale,1583.0
+furniture,Local,1692,28,New,89,sale,1169.0
+hostel,Croma,5210,41,Like New,87,lend,78.0
+notes,Handwritten,363,19,Good,33,sale,186.0
+other,Quechua,700,16,Fair,34,sale,269.0
+books,Pearson,716,9,New,54,sale,561.0
+cycles,Firefox,7450,45,Like New,63,sale,2547.0
+electronics,Casio,35000,32,Good,82,lend,535.0
+lab,Rotring,3919,3,Fair,31,sale,1688.0
+furniture,Nilkamal,7194,17,New,25,sale,4409.0
+hostel,Pigeon,6517,8,Like New,53,sale,4247.0
+notes,Handwritten,306,35,Good,74,sale,117.0
+other,Local,608,4,Fair,39,lend,15
+books,Pearson,528,37,New,90,sale,267.0
+cycles,Firefox,6088,2,Like New,59,sale,4565.0
+electronics,HP,5629,22,Good,46,sale,2659.0
+lab,Generic,2931,6,Fair,65,sale,1345.0
+furniture,IKEA,7642,26,New,39,lend,209.0
+hostel,Decathlon,2139,10,Like New,42,sale,1577.0
+notes,Handwritten,92,11,Good,62,sale,54.0
+other,Yonex,1836,42,Fair,51,sale,388.0
+books,Pearson,868,6,New,68,sale,836.0
+cycles,Firefox,11711,14,Like New,45,lend,324.0
+electronics,Apple,60732,22,Good,59,sale,30382.0
+lab,Omega,3768,14,Fair,48,sale,1244.0
+furniture,Local,1982,25,New,62,sale,1238.0
+hostel,Croma,768,17,Like New,64,sale,507.0
+notes,Handwritten,284,43,Good,88,lend,15
+other,Quechua,263,7,Fair,53,sale,101.0
+books,Pearson,421,2,New,33,sale,374.0
+cycles,Firefox,9663,46,Like New,60,sale,3392.0
+electronics,Casio,67433,7,Good,69,sale,43563.0
+lab,Rotring,978,16,Fair,25,lend,15
+furniture,Nilkamal,413,33,New,88,sale,258.0
+hostel,Pigeon,7902,47,Like New,45,sale,2574.0
+notes,Handwritten,115,42,Good,62,sale,37.0
+other,Local,2867,7,Fair,58,sale,1203.0
+books,Pearson,832,26,New,61,lend,21.0
+cycles,Firefox,8844,35,Like New,36,sale,3601.0
+electronics,HP,50095,43,Good,42,sale,15202.0
+lab,Generic,1432,25,Fair,90,sale,526.0
+furniture,IKEA,2889,18,New,46,sale,2032.0
+hostel,Decathlon,4951,38,Like New,61,lend,85.0
+notes,Handwritten,306,43,Good,47,sale,92.0
+other,Yonex,3401,47,Fair,41,sale,680.0
+books,Pearson,440,32,New,62,sale,230.0
+cycles,Firefox,7848,43,Like New,59,sale,2817.0
+electronics,Apple,26500,9,Good,23,lend,494.0
+lab,Omega,2146,39,Fair,29,sale,487.0
+furniture,Local,7659,40,New,93,sale,3687.0
+hostel,Croma,5904,24,Like New,83,sale,3411.0
+notes,Handwritten,155,41,Good,20,sale,50.0
+other,Quechua,3674,6,Fair,74,lend,60.0
+books,Pearson,862,33,New,79,sale,452.0
+cycles,Firefox,8082,7,Like New,78,sale,5561.0
+electronics,Casio,61301,42,Good,87,sale,22617.0
+lab,Rotring,2638,20,Fair,76,sale,975.0
+furniture,Nilkamal,6292,32,New,74,lend,161.0
+hostel,Pigeon,4688,28,Like New,40,sale,2519.0
+notes,Handwritten,323,28,Good,53,sale,142.0
+other,Local,3590,40,Fair,55,sale,903.0
+books,Pearson,683,31,New,50,sale,373.0
+cycles,Firefox,5269,45,Like New,56,lend,72.0
+electronics,HP,44420,20,Good,89,sale,20292.0
+lab,Generic,817,14,Fair,69,sale,332.0
+furniture,IKEA,6186,13,New,28,sale,4498.0
+hostel,Decathlon,2910,34,Like New,79,sale,1393.0
+notes,Handwritten,185,26,Good,69,lend,15
+other,Yonex,2542,44,Fair,22,sale,553.0
+books,Pearson,739,24,New,81,sale,453.0
+cycles,Firefox,9763,19,Like New,69,sale,6620.0
+electronics,Apple,55321,34,Good,89,sale,23464.0
+lab,Omega,3877,14,Fair,82,lend,58.0
+furniture,Local,3970,31,New,23,sale,2112.0
+hostel,Croma,5679,43,Like New,71,sale,2354.0
+notes,Handwritten,319,8,Good,88,sale,171.0
+other,Quechua,1763,37,Fair,92,sale,497.0
+books,Pearson,235,41,New,74,lend,15
+cycles,Firefox,11564,11,Like New,26,sale,7024.0
+electronics,Casio,43306,13,Good,78,sale,22936.0
+lab,Rotring,3317,24,Fair,55,sale,1138.0
+furniture,Nilkamal,7215,26,New,52,sale,4954.0
+hostel,Pigeon,4052,1,Like New,89,lend,120.0
+notes,Handwritten,259,14,Good,28,sale,136.0
+other,Local,2819,2,Fair,23,sale,1298.0
+books,Pearson,354,1,New,39,sale,295.0
+cycles,Firefox,11758,42,Like New,34,sale,4471.0
+electronics,HP,28969,29,Good,52,lend,500.0
+lab,Generic,887,38,Fair,34,sale,224.0
+furniture,IKEA,1741,19,New,33,sale,1217.0
+hostel,Decathlon,7809,19,Like New,93,sale,5324.0
+notes,Handwritten,272,25,Good,45,sale,105.0
+other,Yonex,2978,40,Fair,51,lend,25.0
+books,Pearson,458,43,New,35,sale,212.0
+cycles,Firefox,13272,2,Like New,64,sale,10468.0
+electronics,Apple,48971,4,Good,84,sale,31963.0
+lab,Omega,251,26,Fair,82,sale,75.0
+furniture,Local,3367,40,New,78,lend,71.0
+hostel,Croma,3767,11,Like New,86,sale,3039.0
+notes,Handwritten,218,39,Good,88,sale,82.0
+other,Quechua,2054,27,Fair,95,sale,643.0
+books,Pearson,401,5,New,55,sale,382.0
+cycles,Firefox,7995,48,Like New,79,lend,114.0
+electronics,Casio,50074,21,Good,23,sale,21938.0
+lab,Rotring,1531,11,Fair,82,sale,592.0
+furniture,Nilkamal,6935,16,New,63,sale,5010.0
+hostel,Pigeon,5083,44,Like New,55,sale,1915.0
+notes,Handwritten,344,12,Good,30,lend,15
+other,Local,1814,31,Fair,91,sale,589.0
+books,Pearson,857,30,New,82,sale,530.0
+cycles,Firefox,4282,5,Like New,57,sale,2971.0
+electronics,HP,32290,19,Good,94,sale,16287.0
+lab,Generic,2467,33,Fair,64,lend,27.0
+furniture,IKEA,6510,35,New,62,sale,3431.0
+hostel,Decathlon,3917,17,Like New,59,sale,2328.0
+notes,Handwritten,141,46,Good,44,sale,37.0
+other,Yonex,3192,34,Fair,43,sale,776.0
+books,Pearson,645,17,New,95,lend,23.0
+cycles,Firefox,12595,38,Like New,56,sale,6032.0
+electronics,Apple,25843,18,Good,49,sale,12118.0
+lab,Omega,1438,0,Fair,88,sale,634.0
+furniture,Local,772,3,New,90,sale,703.0
+hostel,Croma,7933,8,Like New,82,lend,215.0
+notes,Handwritten,86,36,Good,56,sale,30.0
+other,Quechua,1954,21,Fair,43,sale,721.0
+books,Pearson,408,30,New,34,sale,251.0
+cycles,Firefox,10565,31,Like New,29,sale,5049.0
+electronics,Casio,7426,9,Good,39,lend,173.0
+lab,Rotring,1444,5,Fair,51,sale,556.0
+furniture,Nilkamal,6662,26,New,48,sale,4478.0
+hostel,Pigeon,3316,28,Like New,76,sale,1719.0
+notes,Handwritten,381,27,Good,59,sale,165.0
+other,Local,396,39,Fair,32,lend,15
+books,Pearson,362,40,New,47,sale,162.0
+cycles,Firefox,5330,10,Like New,50,sale,3372.0
+electronics,HP,10238,10,Good,20,sale,5135.0
+lab,Generic,3023,38,Fair,80,sale,745.0
+furniture,IKEA,2296,18,New,56,lend,70.0
+hostel,Decathlon,3919,4,Like New,49,sale,3200.0
+notes,Handwritten,400,37,Good,45,sale,134.0
+other,Yonex,2380,14,Fair,39,sale,957.0
+books,Pearson,295,4,New,27,sale,227.0
+cycles,Firefox,9039,38,Like New,92,lend,183.0
+electronics,Apple,57960,7,Good,79,sale,36403.0
+lab,Omega,3066,25,Fair,54,sale,974.0
+furniture,Local,4445,28,New,30,sale,2668.0
+hostel,Croma,7486,27,Like New,61,sale,4134.0
+notes,Handwritten,93,5,Good,49,lend,15
+other,Quechua,3574,36,Fair,95,sale,1103.0
+books,Pearson,838,17,New,93,sale,593.0
+cycles,Firefox,6870,30,Like New,86,sale,3810.0
+electronics,Casio,36858,11,Good,94,sale,21249.0
+lab,Rotring,3535,31,Fair,31,lend,38.0
+furniture,Nilkamal,3745,21,New,61,sale,2741.0
+hostel,Pigeon,7226,10,Like New,62,sale,4971.0
+notes,Handwritten,333,18,Good,71,sale,181.0
+other,Local,2403,2,Fair,78,sale,1004.0
+books,Pearson,408,20,New,34,lend,15
+cycles,Firefox,10622,32,Like New,20,sale,4979.0
+electronics,HP,71518,29,Good,72,sale,26953.0
+lab,Generic,2323,23,Fair,83,sale,831.0
+furniture,IKEA,6625,3,New,46,sale,5503.0
+hostel,Decathlon,1273,18,Like New,76,lend,36.0
+notes,Handwritten,328,7,Good,23,sale,196.0
+other,Yonex,2643,15,Fair,40,sale,912.0
+books,Pearson,164,35,New,72,sale,82.0
+cycles,Firefox,5858,29,Like New,35,sale,2992.0
+electronics,Apple,20581,31,Good,57,lend,326.0
+lab,Omega,1319,26,Fair,81,sale,484.0
+furniture,Local,2396,29,New,90,sale,1420.0
+hostel,Croma,1761,38,Like New,85,sale,847.0
+notes,Handwritten,149,4,Good,55,sale,95.0
+other,Quechua,3649,26,Fair,63,lend,51.0
+books,Pearson,669,17,New,20,sale,437.0
+cycles,Firefox,8891,37,Like New,94,sale,4697.0
+electronics,Casio,64578,9,Good,77,sale,37991.0
+lab,Rotring,1613,21,Fair,90,sale,623.0
+furniture,Nilkamal,3490,29,New,61,lend,93.0
+hostel,Pigeon,5913,15,Like New,93,sale,3992.0
+notes,Handwritten,290,2,Good,60,sale,190.0
+other,Local,3038,24,Fair,69,sale,1129.0
+books,Pearson,817,9,New,83,sale,794.0
+cycles,Firefox,6068,32,Like New,95,lend,122.0
+electronics,HP,13554,28,Good,32,sale,5413.0
+lab,Generic,2071,0,Fair,38,sale,890.0
+furniture,IKEA,5763,9,New,29,sale,4498.0
+hostel,Decathlon,2371,21,Like New,70,sale,1490.0
+notes,Handwritten,248,43,Good,88,lend,15
+other,Yonex,1447,40,Fair,82,sale,392.0
+books,Pearson,186,39,New,28,sale,81.0
+cycles,Firefox,8708,14,Like New,31,sale,5350.0
+electronics,Apple,13303,48,Good,32,sale,3326.0
+lab,Omega,3042,19,Fair,23,lend,36.0
+furniture,Local,6922,3,New,57,sale,6013.0
+hostel,Croma,3728,9,Like New,51,sale,2618.0
+notes,Handwritten,369,43,Good,43,sale,101.0
+other,Quechua,473,39,Fair,68,sale,121.0

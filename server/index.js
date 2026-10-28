@@ -1,0 +1,128 @@
+import 'dotenv/config'
+import express from 'express'
+import cors from 'cors'
+import mongoose from 'mongoose'
+import { connectDB } from './db.js'
+import { seedDatabase } from './seed.js'
+import Listing from './models/Listing.js'
+import listingsRouter from './routes/listings.js'
+import usersRouter from './routes/users.js'
+import messagesRouter from './routes/messages.js'
+import transactionsRouter from './routes/transactions.js'
+import reviewsRouter from './routes/reviews.js'
+import moderationRouter from './routes/admin.js'
+import authRouter from './routes/auth.js'
+import locationRouter from './routes/location.js'
+import aiRouter from './routes/ai.js'
+import watchlistRouter from './routes/watchlist.js'
+import notificationsRouter from './routes/notifications.js'
+import paymentsRouter, { razorpayWebhook } from './routes/payments.js'
+import uploadsRouter from './routes/uploads.js'
+import { storageProvider, LOCAL_UPLOAD_DIR } from './utils/storage.js'
+import { cleanupOrphanUploads } from './utils/uploads.js'
+import { releaseExpiredReservations } from './utils/reservations.js'
+import { authOptional } from './middleware/auth.js'
+import { apiLimiter } from './middleware/rateLimit.js'
+import { refreshLoanStatuses } from './utils/loans.js'
+
+const app = express()
+const PORT = process.env.PORT || 5001
+const MONGO_STATES = ['disconnected', 'connected', 'connecting', 'disconnecting']
+const origins = (process.env.CORS_ORIGINS || 'http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174').split(',')
+
+app.use(cors({ origin: origins.map((s) => s.trim()), credentials: true }))
+// Razorpay signs the raw request body, so the webhook must be mounted BEFORE express.json().
+app.post('/api/payments/webhook', express.raw({ type: '*/*', limit: '1mb' }), razorpayWebhook)
+app.use(express.json({ limit: '1mb' })) // images go through multipart /api/uploads, never base64 in JSON
+app.use(
+  '/uploads',
+  express.static(LOCAL_UPLOAD_DIR, {
+    maxAge: '7d',
+    immutable: true,
+    setHeaders: (res) => res.setHeader('X-Content-Type-Options', 'nosniff'),
+  })
+)
+app.use(apiLimiter)
+app.use(authOptional)
+
+app.get('/api/health', (_req, res) => {
+  res.json({
+    ok: true,
+    service: 'campus-marketplace-api',
+    mongoState: MONGO_STATES[mongoose.connection.readyState] || 'unknown',
+    paymentMode: process.env.RAZORPAY_KEY_ID && process.env.PAYMENT_MODE !== 'dev' ? 'razorpay' : 'dev',
+    storage: storageProvider(),
+    mlServiceUrl: process.env.ML_SERVICE_URL || 'http://127.0.0.1:8000',
+  })
+})
+
+app.get('/api/categories', (_req, res) => {
+  res.json([
+    { id: 'books', label: 'Books', tape: 'yellow' },
+    { id: 'cycles', label: 'Cycles', tape: 'sky' },
+    { id: 'electronics', label: 'Electronics', tape: 'coral' },
+    { id: 'lab', label: 'Lab equipment', tape: 'moss' },
+    { id: 'furniture', label: 'Furniture', tape: 'yellow' },
+    { id: 'hostel', label: 'Hostel essentials', tape: 'sky' },
+    { id: 'notes', label: 'Notes', tape: 'coral' },
+    { id: 'other', label: 'Other', tape: 'moss' },
+  ])
+})
+
+app.use('/api/auth', authRouter)
+app.use('/api/listings', listingsRouter)
+app.use('/api/users', usersRouter)
+app.use('/api/messages', messagesRouter)
+app.use('/api/transactions', transactionsRouter)
+app.use('/api/reviews', reviewsRouter)
+app.use('/api/moderation', moderationRouter)
+app.use('/api/admin', moderationRouter)
+app.use('/api/location', locationRouter)
+app.use('/api/ai', aiRouter)
+app.use('/api/watchlist', watchlistRouter)
+app.use('/api/notifications', notificationsRouter)
+app.use('/api/payments', paymentsRouter)
+app.use('/api/uploads', uploadsRouter)
+
+app.use((err, _req, res, _next) => {
+  if (err?.type === 'entity.too.large') return res.status(413).json({ error: 'Request body too large' })
+  if (err?.type === 'entity.parse.failed') return res.status(400).json({ error: 'Invalid JSON body' })
+  console.error(err)
+  res.status(500).json({ error: 'Internal server error' })
+})
+
+export { app }
+
+async function start() {
+  const connection = await connectDB()
+  const count = await Listing.countDocuments()
+  if (count === 0) {
+    const seeded = await seedDatabase({ clear: false })
+    console.log('Database was empty — seeded sample data:', seeded)
+  }
+
+  setInterval(() => {
+    refreshLoanStatuses().catch((err) => console.warn('loan refresh failed', err.message))
+  }, 5 * 60 * 1000)
+  refreshLoanStatuses().catch(() => {})
+
+  // housekeeping: free abandoned checkouts and uploads that never made it into a listing
+  setInterval(() => {
+    releaseExpiredReservations().catch((err) => console.warn('reservation cleanup failed', err.message))
+    cleanupOrphanUploads().catch((err) => console.warn('upload cleanup failed', err.message))
+  }, 5 * 60 * 1000)
+
+  app.listen(PORT, () => {
+    console.log(`API running on http://localhost:${PORT}`)
+    console.log(`DB mode: ${connection.mode}`)
+    console.log(`Image storage: ${storageProvider()}`)
+  })
+}
+
+const isDirect = process.argv[1] && process.argv[1].endsWith('index.js')
+if (isDirect) {
+  start().catch((err) => {
+    console.error('Failed to start server:', err)
+    process.exit(1)
+  })
+}

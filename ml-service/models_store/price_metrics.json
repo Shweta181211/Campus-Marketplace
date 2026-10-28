@@ -1,0 +1,53 @@
+{
+  "model": "HistGradientBoosting quantile (q10/q50/q90) on log(price/MRP), monotone constraints",
+  "test_overall": {
+    "MAE_inr": 331.13,
+    "MAPE_pct": 8.67,
+    "R2": 0.9868
+  },
+  "test_sale_only": {
+    "MAE_inr": 401.94,
+    "MAPE_pct": 8.49
+  },
+  "naive_baseline_test": {
+    "MAE_inr": 818.61,
+    "MAPE_pct": 43.92,
+    "R2": 0.9371
+  },
+  "interval_80pct_coverage": 0.767,
+  "cqr_log_offset": 0.0154,
+  "n_train": 4800,
+  "n_test": 1200,
+  "n_real_rows": 0,
+  "trainedOn": "synthetic campus depreciation data (no real sales yet \u2014 retrain after trades accumulate)",
+  "features": [
+    "log_original",
+    "age_months",
+    "condition",
+    "demand",
+    "brand_tier",
+    "is_lend",
+    "log_lend_days",
+    "cat_books",
+    "cat_cycles",
+    "cat_electronics",
+    "cat_lab",
+    "cat_furniture",
+    "cat_hostel",
+    "cat_notes",
+    "cat_other",
+    "item_calculator",
+    "item_phone",
+    "item_laptop",
+    "item_tablet",
+    "item_audio",
+    "item_cycle",
+    "item_textbook",
+    "item_notes",
+    "item_appliance",
+    "item_bedding",
+    "item_furniture",
+    "item_lab_gear",
+    "item_generic"
+  ]
+}
