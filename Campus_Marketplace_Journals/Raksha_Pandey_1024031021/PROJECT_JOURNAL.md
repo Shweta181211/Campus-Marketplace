@@ -1,21 +1,4 @@
-# Campus Marketplace — Project Journal
-
-**Student:** Raksha Pandey (1024031021)
-**Group:** 3C73, BE Third Year, CSE
-**Course:** UCS503 - Software Engineering
-**Project:** Campus Marketplace (Buy / Borrow / Sell / Lend web app)
-**Stack:** React (Vite) frontend · Express.js API · MongoDB (Mongoose) · Python/FastAPI ML services
-**My focus:** AI models — price recommendation and fraud detection — plus the supporting trust features (email verification, Google Sign-In, duplicate-account detection, borrow/lend due-date tracking, trust score, privacy-first and encrypted location).
-
----
-
-## 1. Project goal
-
-Build a campus marketplace where verified students can browse listings, sell or lend items, chat, transact, manage a profile with trust scores, and (for admins) review a moderation queue. My part covered the features that make the marketplace trustworthy and "smart": verifying who can use it, guiding fair pricing, catching suspicious activity, tracking borrow/lend due dates, scoring user trust, and sharing location without exposing exact positions.
-
----
-
-## 2. Problems I worked on and how they were overcome
+Problems I worked on and how they were overcome
 
 ### Problem 1 — Sign-up had no way to confirm a user was actually a student
 
