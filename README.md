@@ -8,14 +8,14 @@ Campus-exclusive buy / borrow / sell / lend app for **verified college emails**.
 React (Vite)  →  Express API (:5001)  →  MongoDB
                          ↓
               Python FastAPI ML (:8000)
-              RandomForestRegressor + IsolationForest
+            
 ```
 
 | Layer | Role |
 |--------|------|
 | `src/` | React UI (existing paper / washi-tape design) |
 | `server/` | Auth, listings, loans, payments, location, notifications |
-| `ml-service/` | Price recommendation + fraud anomaly scoring |
+| `ml-service/` | Price recommendation  |
 | MongoDB | Persistence (local, Atlas, or in-memory fallback) |
 
 ## Folder structure
