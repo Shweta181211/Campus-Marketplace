@@ -1,5 +1,3 @@
-Problems I worked on and how they were overcome
-
 ### Problem 1 — Backend was not working at all
 
 **What happened:**
