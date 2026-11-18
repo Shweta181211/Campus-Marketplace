@@ -1,4 +1,21 @@
-Problems I worked on and how they were overcome
+# Campus Marketplace — Project Journal
+
+**Student:** Shweta Agarwal (1024031047)
+**Group:** 3C73, BE Third Year, CSE
+**Course:** UCS503 - Software Engineering
+**Project:** Campus Marketplace (Buy / Borrow / Sell / Lend web app)
+**Stack:** React (Vite) frontend · Express.js API · MongoDB (Mongoose) · Python/FastAPI ML services
+**My focus:** Frontend, frontend-backend integration, demo data, UI for the AI / payment / location features, and documentation.
+
+---
+
+## 1. Project goal
+
+Build a campus marketplace where verified students can browse listings, sell or lend items, chat, transact, manage a profile with trust scores, and (for admins) review a moderation queue. The UI existed first as a frontend-only prototype; the project then became a full-stack system. My part covered connecting the React frontend to the backend cleanly, making every screen work with real data, surfacing the AI, payment and location features in the interface, and making sure the app looked and worked properly for demos, not just in theory.
+
+---
+
+## 2. Problems I worked on and how they were overcome
 
 ### Problem 1 — Frontend icons could not be stored in MongoDB
 
@@ -28,7 +45,7 @@ The Vite app runs on one port (e.g. 5173) and the API on another (5001). Browser
 A brand-new database has no listings, so Buy/Borrow and Dashboard looked broken even when the API worked. Real usage data only appears after people use the app.
 
 **How it was overcome:**
-- Wrote `server/seed.js` with relevant sample data, first 15 listings and later about 30 verified students and about 70 sale and lend listings, plus loans, reviews, watchlists, notifications, payments and high-risk fraud examples (all marked `isSeed: true`).
+- Wrote `server/seed.js` with relevant sample data, first 15 listings and later about 30 verified students and about 70 sale and lend listings, plus loans, reviews, watchlists and notifications (all marked `isSeed: true`).
 - The server seeds automatically when the database is empty; manual re-seed with `npm run seed`. Demo logins for a student and an admin are documented.
 
 ---
@@ -55,15 +72,15 @@ Messages, notifications, transactions, watchlist and the dashboard needed to ref
 
 ---
 
-### Problem 6 — AI results and fraud decisions were invisible to users
+### Problem 6 — AI price recommendations were not visible to users
 
 **What happened:**
-The price and fraud models only mattered if sellers, buyers and admins could see and understand their output.
+The price-recommendation model only helped sellers if its output was clearly presented in the interface.
 
 **How it was overcome:**
 - Built the **PriceInsight** component: recommended price, fair band, confidence, explanation, a "formula estimate" label when the ML service is down, and live campus comparables when enough similar listings exist.
-- Extended the Sell/Lend form with the inputs the model needs (original price, condition, age, brand) and the fraud-warning messages shown after publishing.
-- Built the **TrustBadge** component and the **Admin Moderation** page for reviewing held listings.
+- Extended the Sell/Lend form with the inputs the price model needs (original price, condition, age and brand).
+- Built the **TrustBadge** component to display marketplace reliability information.
 
 ---
 
@@ -88,77 +105,6 @@ With many moving parts (frontend, API, ML service, payments, storage) a new pers
 - Wrote the full **README**: architecture, folder structure, environment variables, database and seed setup, how to run each service, payment and storage guides, API overview, known limitations.
 - Added a step-by-step manual test checklist and kept `npm run lint` and `npm run build` passing.
 
-
----
-
-## 2b. Final phase — admin console, fraud and trust UI, avatar builder, documentation
-
-### Problem 9 — The fraud decision was invisible to sellers
-
-**What happened:**
-After the decision engine was added, a MEDIUM-risk listing waited for a code and a HIGH-risk listing was held, but the seller only saw a generic "listing submitted" message and had no way to finish the verification.
-
-**How it was overcome:**
-- Built the **VerifyListing** panel: the seller enters the 6-digit code (shown on screen in development mode) and can resend it, both on the success screen and in My Listings.
-- My Listings now shows clear status badges ("needs verification", "under admin review") and the reasons a listing was held.
-- The success screen shows the AI fraud screening level and the AI fair range.
-
----
-
-### Problem 10 — The admin page could only approve or reject listings
-
-**What happened:**
-The moderation page listed held listings and nothing else, while admins now needed reports, suspension, analytics and settings.
-
-**How it was overcome:**
-- Rebuilt it as an **Admin console** with seven tabs: **Fraud alerts** (risk meter with the 0.40 / 0.70 thresholds, reasons, signals, note to seller), **Reports** (confirm, confirm and remove, dismiss), **Users** (search, linked accounts, suspend / unsuspend), **Analytics** (stat tiles, bars by status, category and risk level, overdue loans), **Settings** (banned words, enable / disable / add categories), **AI models** (ROC-AUC, recall, false alarms, detection by scam pattern) and **Audit log**.
-
----
-
-### Problem 11 — Students had no way to report, set alerts or understand their trust score
-
-**What happened:**
-The new backend features (reports, price-drop thresholds, trust breakdown) had no controls in the interface.
-
-**How it was overcome:**
-- Added **Report listing** on the listing page and a **report icon on received chat messages**.
-- Added a **price-drop alert** control on the listing page (any drop, at least %, at least ₹).
-- Added a **trust-score breakdown** on the profile showing each part of the formula and the score history from the audit trail.
-- Made category lists load from the server so admin changes appear for sellers.
-- The API client now sends a random per-browser device id used for duplicate-account detection.
-
----
-
-### Problem 12 — Profiles used only an emoji avatar
-
-**What happened:**
-Our specification asks for a component-based avatar (face, hair, clothing, accessories and colours) so students do not need a real photo.
-
-**How it was overcome:**
-- Built an **AvatarBuilder** with live preview and a random option, and an SVG **AvatarFigure** used in the profile, navbar, listing pages and admin user list. Also added profile editing of name and hostel.
-
----
-
-### Problem 13 — Testing fraud detection in a demo was confusing
-
-**What happened:**
-While testing, a very high asking price showed "Priced above estimate" and it was unclear whether fraud detection was working. Repeatedly posting the same test item also triggered the spam rule.
-
-**How it was overcome:**
-- Documented that the price insight comes from the price model, that fraud screening runs only on publish, and that a high price is not treated as fraud (scams use too-good-to-be-true prices).
-- Added a step-by-step demo in the README: a normal listing (LOW), a "pay advance on WhatsApp" listing (MEDIUM), a ₹9,000 iPhone 14 Pro (HIGH), and how to check the result in the admin console.
-
----
-
-### Problem 14 — The report and documentation no longer matched the final system
-
-**What happened:**
-The report still described the first Random Forest price model (R² 0.623) and the placeholder fraud model.
-
-**How it was overcome:**
-- Updated the README (fraud model, decision engine, reports, admin console, trust formula, feature-coverage table, 13-step manual checklist) and the final LaTeX report: new requirements (FR14–FR16), the 22 fraud features, the decision-engine table, the trust formula, the new API modules, the model comparison and fraud metrics, and the new challenges, while keeping the same format and diagrams.
-- Seed data now has realistic account and listing dates, avatars, alert thresholds and example reports.
-
 ---
 
 ## 3. My part of the architecture
@@ -169,17 +115,12 @@ The report still described the first Random Forest price model (R² 0.623) and t
 | Dev environment (CORS + Vite proxy) | Frontend and backend connectivity | **Me** |
 | Seed data (`server/seed.js`) | Demo-ready users, listings, loans, reviews, notifications | **Me** |
 | Auth and marketplace UI | Auth page, Messages, Notifications, Transactions, Dashboard | **Me** |
-| AI / trust UI | PriceInsight, TrustBadge, Admin Moderation page | **Me** |
+| AI / trust UI | PriceInsight and TrustBadge components | **Me** |
 | Uploads, checkout, location UI | ImageUploader, payment flow, nearby filter | **Me** |
-| Admin console UI | Fraud alerts, reports, users, analytics, settings, AI models, audit log | **Me** |
-| Fraud and trust UI | Verification panel, report buttons, price-drop alert control, trust breakdown | **Me** |
-| Avatar builder | Component-based SVG avatar and profile editing | **Me** |
-| Documentation | README, manual test checklist, final project report | **Me** |
+| Documentation | README, manual test checklist | **Me** |
 
 ---
 
 ## 4. Reflection
 
-My part of the work was less about database internals and more about making sure the frontend and backend actually talked to each other cleanly, and that the app looked "alive" the moment someone opened it, rather than a blank, broken-looking screen. Fixing the icon-storage mismatch, sorting out CORS and proxy config, writing realistic seed data and then building the interfaces for pricing, fraud review, payments, uploads and location meant the rest of the team's backend and ML work was actually visible, usable and demoable.
-
-**Final phase:** a model or an admin rule only helps if people can see and act on it. Most of my final work was turning backend decisions into clear screens: why a listing is held, how to finish verification, how the trust score is built, and one console where an admin can handle everything. Writing the demo steps also showed me that good documentation is part of the feature: without it, a correctly working fraud model looked broken during testing.
+My part of the work was less about database internals and more about making sure the frontend and backend actually talked to each other cleanly, and that the app looked "alive" the moment someone opened it, rather than a blank, broken-looking screen. Fixing the icon-storage mismatch, sorting out CORS and proxy config, writing realistic seed data and then building the interfaces for pricing, payments, uploads and location meant the rest of the team's backend and ML work was actually visible, usable and demoable.
