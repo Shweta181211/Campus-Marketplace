@@ -1,21 +1,4 @@
-# Campus Marketplace — Project Journal
-
-**Student:** Shrasthi Singh Rathore (1024031049)
-**Group:** 3C73, BE Third Year, CSE
-**Course:** UCS503 - Software Engineering
-**Project:** Campus Marketplace (Buy / Borrow / Sell / Lend web app)
-**Stack:** React (Vite) frontend · Express.js API · MongoDB (Mongoose) · Python/FastAPI ML services · Razorpay · Cloudinary
-**My focus:** Core backend — API, database, security middleware, transactions, ML integration, payments and cloud image storage.
-
----
-
-## 1. Project goal
-
-Build a campus marketplace where verified students can browse listings, sell or lend items, chat, transact, manage a profile with trust scores, and (for admins) review a moderation queue. The UI existed first as a frontend-only prototype; the project then became a full-stack system with a real database, secure APIs, AI services, payments and cloud image storage. My part covered the backend that everything else is built on: persistence, access control, the transaction lifecycle, integration with the ML services, safe payments and image storage.
-
----
-
-## 2. Problems I worked on and how they were overcome
+Problems I worked on and how they were overcome
 
 ### Problem 1 — Backend was not working at all
 
