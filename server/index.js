@@ -18,6 +18,8 @@ import watchlistRouter from './routes/watchlist.js'
 import notificationsRouter from './routes/notifications.js'
 import paymentsRouter, { razorpayWebhook } from './routes/payments.js'
 import uploadsRouter from './routes/uploads.js'
+import reportsRouter from './routes/reports.js'
+import { enabledCategories } from './utils/settings.js'
 import { storageProvider, LOCAL_UPLOAD_DIR } from './utils/storage.js'
 import { cleanupOrphanUploads } from './utils/uploads.js'
 import { releaseExpiredReservations } from './utils/reservations.js'
@@ -56,17 +58,13 @@ app.get('/api/health', (_req, res) => {
   })
 })
 
-app.get('/api/categories', (_req, res) => {
-  res.json([
-    { id: 'books', label: 'Books', tape: 'yellow' },
-    { id: 'cycles', label: 'Cycles', tape: 'sky' },
-    { id: 'electronics', label: 'Electronics', tape: 'coral' },
-    { id: 'lab', label: 'Lab equipment', tape: 'moss' },
-    { id: 'furniture', label: 'Furniture', tape: 'yellow' },
-    { id: 'hostel', label: 'Hostel essentials', tape: 'sky' },
-    { id: 'notes', label: 'Notes', tape: 'coral' },
-    { id: 'other', label: 'Other', tape: 'moss' },
-  ])
+// categories are managed by admins (Admin console -> Settings); disabled ones are hidden from sellers
+app.get('/api/categories', async (_req, res) => {
+  try {
+    res.json((await enabledCategories()).map(({ id, label, tape }) => ({ id, label, tape })))
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
 })
 
 app.use('/api/auth', authRouter)
@@ -83,6 +81,7 @@ app.use('/api/watchlist', watchlistRouter)
 app.use('/api/notifications', notificationsRouter)
 app.use('/api/payments', paymentsRouter)
 app.use('/api/uploads', uploadsRouter)
+app.use('/api/reports', reportsRouter)
 
 app.use((err, _req, res, _next) => {
   if (err?.type === 'entity.too.large') return res.status(413).json({ error: 'Request body too large' })

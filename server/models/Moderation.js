@@ -11,6 +11,9 @@ const moderationSchema = new mongoose.Schema(
     listingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Listing' },
     fraudRiskScore: { type: Number, default: 0 },
     signals: [{ type: String }],
+    reasons: [{ feature: String, level: String, text: String, impact: Number, _id: false }],
+    source: { type: String, default: 'ml' }, // ml | heuristic | reports
+    adminNote: { type: String, default: '' },
     reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     reviewedAt: { type: Date, default: null },
     isSeed: { type: Boolean, default: false },

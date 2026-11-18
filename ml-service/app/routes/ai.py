@@ -2,30 +2,34 @@ import math
 
 from fastapi import APIRouter, HTTPException
 
-from app.schemas import PricePredictIn, PricePredictOut, FraudScoreIn, FraudScoreOut
-from app.services.features import encode, resolve_original, LEND_UNIT_DAYS
-from app.services.model_store import (
-    load_price_model,
-    load_fraud_model,
-    load_metrics,
-    fraud_vector,
-    signals_from_payload,
+from app.schemas import (
+    AssessListingIn,
+    AssessListingOut,
+    FraudScoreIn,
+    FraudScoreOut,
+    PricePredictIn,
+    PricePredictOut,
 )
+from app.services.features import encode, resolve_original, LEND_UNIT_DAYS
+from app.services.fraud_model import DECISION
+from app.services.model_store import load_fraud_metrics, load_fraud_model, load_metrics, load_price_model
 
 router = APIRouter()
 price_bundle = load_price_model()
-fraud_bundle = load_fraud_model()
+fraud_bundle = load_fraud_model()  # FraudScorer instance
 metrics = load_metrics()
+fraud_metrics = load_fraud_metrics()
 
 LEND_MIN = {"day": 10, "week": 40, "semester": 100}
 
 
 def reload_models():
     """Used by the startup hook after (re)training."""
-    global price_bundle, fraud_bundle, metrics
+    global price_bundle, fraud_bundle, metrics, fraud_metrics
     price_bundle = load_price_model()
     fraud_bundle = load_fraud_model()
     metrics = load_metrics()
+    fraud_metrics = load_fraud_metrics()
 
 
 def _round_price(value: float) -> int:
@@ -111,26 +115,77 @@ def model_info():
     }
 
 
+def _fraud(body: FraudScoreIn) -> FraudScoreOut:
+    if not fraud_bundle:
+        raise HTTPException(status_code=503, detail="Fraud model is not trained. Run: npm run ml:train")
+    r = fraud_bundle.score(body.model_dump())
+    decision, text = DECISION[r.level]
+    return FraudScoreOut(
+        fraudRiskScore=r.risk,
+        fraudRiskLevel=r.level,
+        decision=decision,
+        decisionText=text,
+        fraudSignals=r.signals,
+        reasons=r.reasons,
+        anomalyScore=r.anomaly_risk,
+        supervisedScore=r.supervised_risk,
+    )
+
+
 @router.post("/ai/fraud-score", response_model=FraudScoreOut)
 def fraud_score(body: FraudScoreIn):
+    return _fraud(body)
+
+
+@router.get("/ai/fraud-model-info")
+def fraud_model_info():
     if not fraud_bundle:
-        raise HTTPException(status_code=503, detail="Fraud model is not trained.")
-    model = fraud_bundle["model"]
-    x = fraud_vector(body.model_dump())
-    raw = model.decision_function(x)[0]
-    risk = float(1 / (1 + pow(2.71828, raw * 3)))
-    risk = max(0.0, min(1.0, risk))
-    payload = body.model_dump()
-    if (
-        risk > 0.55
-        and payload.get("originalRatio", 1) >= 0.35
-        and payload.get("duplicateTitleCount", 0) < 2
-        and payload.get("listingBurst1h", 0) < 3
-    ):
-        risk *= 0.7
-    level = "HIGH" if risk >= 0.7 else "MEDIUM" if risk >= 0.4 else "LOW"
-    return FraudScoreOut(
-        fraudRiskScore=round(risk, 3),
-        fraudRiskLevel=level,
-        fraudSignals=signals_from_payload(payload, risk),
+        return {"loaded": False}
+    return {"loaded": True, **fraud_bundle.info(), "metrics": fraud_metrics}
+
+
+@router.post("/ai/assess-listing", response_model=AssessListingOut)
+def assess_listing(body: AssessListingIn):
+    """Combined AI decision layer (PDF section 7): pricing model -> fair range, fraud model -> risk score.
+
+    The price deviation is fed INTO the fraud model as one feature among 22; it is never a verdict on its
+    own (an iPhone 30 % under the range from a trusted seller stays LOW)."""
+    pricing = price_predict(body.listing)
+    asked = float(body.price)
+    fair = pricing.recommendedPrice
+    deviation = round((asked - fair) / max(fair, 1.0) * 100, 1)
+    if asked < pricing.minFairPrice:
+        verdict = "BELOW_FAIR_RANGE"
+    elif asked > pricing.maxFairPrice:
+        verdict = "ABOVE_FAIR_RANGE"
+    else:
+        verdict = "FAIR"
+
+    fraud_in = body.fraud.model_copy(
+        update={
+            "price": asked,
+            "fairPrice": fair,
+            "originalPrice": body.listing.originalPrice,
+            "originalRatio": asked / body.listing.originalPrice if body.listing.originalPrice else 1,
+        }
+    )
+    fraud = _fraud(fraud_in)
+    price_msg = {
+        "FAIR": "Price is inside the AI-estimated fair range.",
+        "BELOW_FAIR_RANGE": f"Price is {abs(deviation)}% below the AI estimate — a good deal, or worth a closer look.",
+        "ABOVE_FAIR_RANGE": f"Price is {deviation}% above the AI estimate — buyers may negotiate.",
+    }[verdict]
+    messages = {
+        "seller": f"{price_msg} {fraud.decisionText}",
+        "buyer": price_msg + (" Meet on campus and never pay in advance outside the app." if fraud.fraudRiskLevel != "LOW" else ""),
+        "admin": f"Risk {fraud.fraudRiskScore} ({fraud.fraudRiskLevel}); signals: {', '.join(fraud.fraudSignals)}; "
+        + "; ".join(f"{r.text} (+{r.impact})" for r in fraud.reasons),
+    }
+    return AssessListingOut(
+        pricing=pricing,
+        priceVerdict=verdict,
+        priceDeviationPct=deviation,
+        fraud=fraud,
+        decision=fraud.decision,
+        messages=messages,
     )

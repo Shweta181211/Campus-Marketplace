@@ -125,3 +125,38 @@ Seed data is enough to demonstrate browsing, filtering, profile, messages, trans
 ## 5. Reflection
 
 The hardest gap was not the UI — it was making a **working backend** when MongoDB was unavailable and the frontend was still hardwired to mock data. Splitting API + models + seed + frontend hydration, and adding an in-memory MongoDB fallback, turned a broken “backend later” prototype into a fully functional demo stack suitable for journal submission and viva.
+
+
+---
+
+## Phase — Fraud detection model + completing the PDF scope
+
+### Problem — the fraud "model" was a placeholder
+**What happened:** the Isolation Forest was fitted on 400 random points plus 3 hand-written anomalies, with 13 features. It had no evaluation, no explanations, and MEDIUM-risk listings were simply published.
+**How it was overcome:**
+- Built a synthetic marketplace simulator (`generate_fraud_data.py`) with 6 scam patterns and 2 tricky-but-honest groups (big bargains, graduating seniors posting many items).
+- 22 risk-oriented features across listing / user / behaviour levels, with one-sided clipping so "unusually good" behaviour never looks anomalous.
+- Percentile-calibrated 0-1 risk score; evaluation on held-out data (ROC-AUC ≈ 0.998, ~2 % false alarms vs 7.7 % for simple rules).
+- Occlusion explanations ("asking price far below the AI fair price (+0.15)").
+- Decision engine exactly as in the PDF: LOW publish, MEDIUM email-OTP verification, HIGH hold + admin review.
+- Stage 2 ready: admin decisions are exported as labels and a RandomForest is blended in once there are ≥ 10 of each.
+
+### Problem — a cheap item looked like fraud
+**What happened:** a ₹650 calculator was MEDIUM because "price vs category average" compared it with ₹40 000 phones in *electronics*.
+**How it was overcome:** compare with the median of *comparable* listings (same category, original price within ×0.5-×2), neutral when fewer than 4 exist.
+
+### Problem — trusted accounts posting scam listings scored only MEDIUM
+**What happened:** all simulated price-bait scams came from brand-new accounts, so the model learned "old account = safe".
+**How it was overcome:** 30 % of simulated price-bait now comes from established (possibly compromised) accounts; such listings are now held.
+
+### Other PDF items completed
+- Price-drop alerts (were missing entirely) with % / ₹ thresholds.
+- Student reports (listing, user, chat message), auto-hold after 3 reports, admin confirm/dismiss.
+- Admin console: suspend users, analytics, banned words, category management, model metrics, audit log.
+- Trust score rewritten to the PDF formula with an audit trail of every change.
+- Avatar builder (JSON + SVG), duplicate-account detection, encrypted stored location.
+- 17 new backend tests (50 total) and 9 new ML tests (17 total).
+
+### Problem — new students' first listings went to review
+**What happened:** in testing, almost every listing from a freshly created account became MEDIUM/HIGH. The simulator gave new accounts the same trust (~64) as old ones, but the real trust formula starts a new verified student at ~45-55, so every real new account looked "anomalous". Re-posting the same test item several times also triggered the spam pattern.
+**How it was overcome:** simulated new accounts now use the real starting trust range and appear more often (12 %); the alert budget was tightened so ~5 % of listings need verification and ~2.4 % are held; a guardrail keeps two independent red flags at MEDIUM or above. False alarms on honest students fell from ~2 % to < 1 %, recall stayed ≈ 92 %.

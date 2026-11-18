@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { findBannedWord } from '../utils/settings.js'
 import Message from '../models/Message.js'
 import Listing from '../models/Listing.js'
 import { requireAuth, requireVerified } from '../middleware/auth.js'
@@ -67,6 +68,9 @@ router.post('/', requireAuth, requireVerified, async (req, res) => {
     const { preview, body, item = '', listingId, toUserId, conversationId } = req.body || {}
     const text = body || preview
     if (!text) return res.status(400).json({ error: 'message body is required' })
+    if (String(text).length > 2000) return res.status(400).json({ error: 'Message is too long (max 2000 characters)' })
+    const banned = await findBannedWord(text)
+    if (banned) return res.status(400).json({ error: `Messages mentioning "${banned}" are not allowed` })
 
     let peer = toUserId
     let listingTitle = item

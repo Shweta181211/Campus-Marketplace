@@ -9,6 +9,9 @@ import { authLimiter, otpLimiter } from '../middleware/rateLimit.js'
 import { recomputeTrustScore } from '../utils/trust.js'
 import { verifyGoogleIdToken, googleOAuthEnabled, googleClientId, googleAuthUrl, exchangeGoogleCode, googleRedirectUri } from '../utils/googleAuth.js'
 import crypto from 'crypto'
+import { rememberDevice, accountsOnDevice, ipHashFrom } from '../utils/device.js'
+
+const MAX_ACCOUNTS_PER_DEVICE = Number(process.env.MAX_ACCOUNTS_PER_DEVICE || 3)
 
 const router = Router()
 const OTP_TTL_MS = Number(process.env.OTP_TTL_MS || 10 * 60 * 1000)
@@ -145,6 +148,13 @@ router.post('/register', authLimiter, async (req, res) => {
     if (existing && existing.verified) {
       return res.status(409).json({ error: 'Email already registered' })
     }
+    // Duplicate-account detection: many verified accounts from one browser/device is a classic multi-account
+    // pattern. We stop new sign-ups past the limit; below it the count still feeds the fraud model.
+    if (!existing && (await accountsOnDevice(req)) >= MAX_ACCOUNTS_PER_DEVICE) {
+      return res.status(429).json({
+        error: 'Too many accounts have been created from this device. Contact the campus admin if this is a shared computer.',
+      })
+    }
 
     const passwordHash = await bcrypt.hash(password, 10)
     const user =
@@ -167,8 +177,10 @@ router.post('/register', authLimiter, async (req, res) => {
     user.avatar = avatar || user.avatar
     user.verified = false
     user.verificationStatus = 'pending'
+    if (!user.signupIpHash) user.signupIpHash = ipHashFrom(req)
 
     const { otp, delivery } = await issueOtp(user)
+    await rememberDevice(user._id, req)
     const payload = {
       ok: true,
       verificationStatus: 'pending',
@@ -238,7 +250,8 @@ router.post('/verify', otpLimiter, async (req, res) => {
     user.otpExpiresAt = null
     user.otpAttempts = 0
     await user.save()
-    await recomputeTrustScore(user._id)
+    await recomputeTrustScore(user._id, { reason: 'college email verified' })
+    await rememberDevice(user._id, req)
     const fresh = await User.findById(user._id)
     const token = signToken(fresh)
     res.json({ ok: true, token, user: publicUser(fresh), verificationStatus: 'verified' })
@@ -262,6 +275,10 @@ router.post('/login', authLimiter, async (req, res) => {
         email: user.email,
       })
     }
+    if (user.suspended) {
+      return res.status(403).json({ error: `Your account is suspended${user.suspendedReason ? `: ${user.suspendedReason}` : ''}.`, suspended: true })
+    }
+    await rememberDevice(user._id, req)
     const token = signToken(user)
     res.json({ ok: true, token, user: publicUser(user) })
   } catch (err) {
@@ -312,6 +329,8 @@ router.post('/google', authLimiter, async (req, res) => {
     const { idToken } = req.body || {}
     const profile = await verifyGoogleIdToken(idToken)
     const { token, user } = await loginWithGoogleProfile(profile)
+    if (user.suspended) return res.status(403).json({ error: 'Your account is suspended.', suspended: true })
+    await rememberDevice(user.id, req)
     res.json({
       ok: true,
       token,

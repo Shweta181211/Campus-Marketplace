@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { MessageCircle, ArrowLeft, Send } from 'lucide-react'
+import { MessageCircle, ArrowLeft, Send, Flag } from 'lucide-react'
 import { api } from '../api'
+import { useAuth } from '../auth'
 
 export default function Messages() {
   const [threads, setThreads] = useState([])
@@ -9,6 +10,20 @@ export default function Messages() {
   const [draft, setDraft] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
+  const { user } = useAuth()
+  const me = String(user?.id || user?._id || '')
+
+  const reportMessage = async (m) => {
+    const reason = window.prompt('Report this message to the admin team. What is wrong with it?', 'Abusive or scam message')
+    if (!reason) return
+    try {
+      const r = await api.report({ targetType: 'message', messageId: m.id, reason, category: /scam|pay|upi|advance/i.test(reason) ? 'scam' : 'harassment' })
+      setNotice(r.message || 'Report sent')
+    } catch (err) {
+      setError(err.message)
+    }
+  }
 
   const loadThreads = () =>
     api.getMessages().then(setThreads).catch((err) => setError(err.message))
@@ -53,6 +68,7 @@ export default function Messages() {
       <h1 className="font-display font-bold text-2xl mb-1">Messages</h1>
       <p className="text-sm text-ink-soft mb-6">Chats with buyers, sellers and borrowers on campus</p>
       {error && <p className="text-sm text-coral-ink mb-3">{error}</p>}
+      {notice && <p className="text-sm text-moss-ink mb-3">{notice}</p>}
 
       {active ? (
         <div>
@@ -61,9 +77,16 @@ export default function Messages() {
           </button>
           <div className="bg-paper-card border-[1.5px] border-ink rounded-md p-4 min-h-64 space-y-2">
             {messages.map((m) => (
-              <div key={m.id} className="text-sm">
-                <span className="font-medium">{m.name}: </span>
-                <span className="text-ink-soft">{m.body || m.preview}</span>
+              <div key={m.id} className="text-sm group flex items-start gap-2">
+                <div className="flex-1">
+                  <span className="font-medium">{m.name}: </span>
+                  <span className="text-ink-soft">{m.body || m.preview}</span>
+                </div>
+                {String(m.fromUserId) !== me && String(m.toUserId) === me && (
+                  <button type="button" onClick={() => reportMessage(m)} title="Report message" className="opacity-40 group-hover:opacity-100 text-ink-soft hover:text-coral-ink">
+                    <Flag size={12} />
+                  </button>
+                )}
               </div>
             ))}
           </div>

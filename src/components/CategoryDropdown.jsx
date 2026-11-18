@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 import { ChevronDown, Check } from 'lucide-react'
-import { categories } from '../data/mockData'
+import { useCategories } from '../hooks/useCategories'
 
 export default function CategoryDropdown({ value, onChange, placeholder = 'All categories', allowAll = true }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
+  const categories = useCategories()
   const selected = categories.find((c) => c.id === value)
 
   useEffect(() => {

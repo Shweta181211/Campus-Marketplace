@@ -6,6 +6,7 @@ const sellerSchema = new mongoose.Schema(
     trust: Number,
     trustScore: Number,
     avatar: String,
+    avatarConfig: { type: mongoose.Schema.Types.Mixed, default: null },
     verified: Boolean,
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   },
@@ -48,7 +49,8 @@ const listingSchema = new mongoose.Schema(
     aiSource: { type: String, enum: ['ml', 'unavailable', 'seed', 'heuristic'], default: 'unavailable' },
     status: {
       type: String,
-      enum: ['active', 'sold', 'removed', 'pending', 'held', 'draft', 'reserved'],
+      // verification = MEDIUM fraud risk, waiting for the seller's email-OTP confirmation
+      enum: ['active', 'sold', 'removed', 'pending', 'held', 'draft', 'reserved', 'verification'],
       default: 'active',
     },
     reservedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
@@ -56,13 +58,23 @@ const listingSchema = new mongoose.Schema(
     views: { type: Number, default: 0 },
     messageCount: { type: Number, default: 0 },
     images: [{ type: String }],
+    imageHashes: [{ type: String }], // sha256 of each photo, used to detect photos reused across sellers
     fraudRiskScore: { type: Number, default: 0, min: 0, max: 1 },
     fraudRiskLevel: { type: String, enum: ['LOW', 'MEDIUM', 'HIGH'], default: 'LOW' },
     fraudSignals: [{ type: String }],
     fraudReviewed: { type: Boolean, default: false },
     fraudReviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     fraudReviewedAt: { type: Date, default: null },
-    fraudDecision: { type: String, enum: ['pending', 'approved', 'rejected', 'none'], default: 'none' },
+    fraudDecision: { type: String, enum: ['pending', 'approved', 'rejected', 'none', 'verified'], default: 'none' },
+    fraudAction: { type: String, enum: ['PUBLISH', 'VERIFY', 'HOLD'], default: 'PUBLISH' },
+    fraudReasons: [{ feature: String, level: String, text: String, impact: Number, _id: false }],
+    fraudSource: { type: String, default: 'heuristic' },
+    fraudFeatures: { type: mongoose.Schema.Types.Mixed, default: null }, // snapshot -> future supervised training
+    heldReason: { type: String, enum: ['fraud', 'reports', 'suspension', null], default: null },
+    reportCount: { type: Number, default: 0 },
+    // never sent to clients: serializeListing() strips these
+    verifyOtpHash: { type: String, default: null },
+    verifyOtpExpiresAt: { type: Date, default: null },
     isSeed: { type: Boolean, default: false },
     trainingExportable: { type: Boolean, default: true },
   },
@@ -75,6 +87,7 @@ listingSchema.index({ 'seller.userId': 1 })
 listingSchema.index({ geo: '2dsphere' })
 listingSchema.index({ title: 'text', description: 'text' })
 listingSchema.index({ descriptionHash: 1 })
+listingSchema.index({ imageHashes: 1 })
 listingSchema.index({ isSeed: 1 })
 
 export default mongoose.model('Listing', listingSchema)

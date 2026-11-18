@@ -47,7 +47,7 @@ export default function Navbar({ search, setSearch, onMenuClick }) {
           {unread > 0 && <span className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-tape-coral" />}
         </button>
         <button onClick={() => navigate('/profile')} className="shrink-0">
-          <Avatar emoji={user?.avatar || '🦊'} size="sm" rotate={-4} />
+          <Avatar emoji={user?.avatar || '🦊'} config={user?.avatarConfig} size="sm" rotate={-4} />
         </button>
       </div>
     </header>

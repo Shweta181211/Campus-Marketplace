@@ -3,7 +3,11 @@ import Listing from '../models/Listing.js'
 import User from '../models/User.js'
 import Watchlist from '../models/Watchlist.js'
 import { requireAuth, requireVerified } from '../middleware/auth.js'
-import { recommendPrice, hashText, assessListingFraud, applyFraudDecision } from '../utils/ai.js'
+import { recommendPrice, hashText, assessListingFraud, applyFraudDecision, issueListingOtp, listingOtpMatches } from '../utils/ai.js'
+import { findBannedWord, isCategoryAllowed } from '../utils/settings.js'
+import { notifyPriceDrop } from '../utils/priceAlerts.js'
+import Moderation from '../models/Moderation.js'
+import { otpLimiter } from '../middleware/rateLimit.js'
 import { encodeGeohash, haversineKm, roundDistanceKm, fuzzPoint, validCoords } from '../utils/geohash.js'
 import { findNearby, NearbyError } from '../utils/nearby.js'
 import { resolveListingImages, attachAssets, deleteAssets, deleteListingImages } from '../utils/uploads.js'
@@ -40,6 +44,10 @@ export function serializeListing(doc, { viewer = null, includePrivateGeo = false
   const locationShared = Boolean(obj.locationSharingEnabled && coords?.length === 2)
   delete obj.geo
   delete obj.reservedBy
+  delete obj.fraudFeatures
+  delete obj.verifyOtpHash
+  delete obj.verifyOtpExpiresAt
+  delete obj.imageHashes
   if (!includePrivateGeo) {
     obj.geoHash = obj.geoHash ? String(obj.geoHash).slice(0, 5) : null
   }
@@ -126,8 +134,14 @@ router.get('/mine', requireAuth, requireVerified, async (req, res) => {
 
 router.get('/:id', requireAuth, requireVerified, async (req, res) => {
   try {
-    const listing = await Listing.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } }, { new: true })
-    if (!listing) return res.status(404).json({ error: 'Listing not found' })
+    const existing = await Listing.findById(req.params.id).select('status seller')
+    if (!existing) return res.status(404).json({ error: 'Listing not found' })
+    const isOwner = String(existing.seller?.userId) === String(req.user._id)
+    // held / unverified listings are invisible to other students
+    if (['held', 'verification', 'removed'].includes(existing.status) && !isOwner && req.user.role !== 'admin') {
+      return res.status(404).json({ error: 'Listing not found' })
+    }
+    const listing = await Listing.findByIdAndUpdate(req.params.id, { $inc: { views: isOwner ? 0 : 1 } }, { new: true })
     const viewer = await User.findById(req.user._id).select('locationExact locationSharingEnabled locationUpdatedAt')
     res.json(serializeListing(listing, { viewer }))
   } catch (err) {
@@ -160,6 +174,19 @@ router.post('/', requireAuth, requireVerified, async (req, res) => {
 
     if (!title || !category || !condition || price == null) {
       return res.status(400).json({ error: 'title, category, condition and price are required' })
+    }
+    if (!Number.isFinite(Number(askingPrice ?? price)) || Number(askingPrice ?? price) < 0) {
+      return res.status(400).json({ error: 'price must be a positive number' })
+    }
+    if (String(title).length > 120 || String(description).length > 3000) {
+      return res.status(400).json({ error: 'Title (max 120) or description (max 3000 characters) is too long' })
+    }
+    if (!(await isCategoryAllowed(category))) {
+      return res.status(400).json({ error: 'This category is not open for listings right now' })
+    }
+    const banned = await findBannedWord(title, description, brand)
+    if (banned) {
+      return res.status(400).json({ error: `Listings mentioning "${banned}" are not allowed on the campus marketplace` })
     }
 
     const type = normalizeType(listingType)
@@ -205,6 +232,7 @@ router.post('/', requireAuth, requireVerified, async (req, res) => {
         trust: sellerUser.trust,
         trustScore: sellerUser.trustScore,
         avatar: sellerUser.avatar,
+        avatarConfig: sellerUser.avatarConfig || null,
         verified: sellerUser.verified,
         userId: sellerUser._id,
       },
@@ -225,6 +253,7 @@ router.post('/', requireAuth, requireVerified, async (req, res) => {
     const resolved = await resolveListingImages(images, sellerUser._id, null)
     if (resolved.error) return res.status(400).json({ error: resolved.error })
     listing.images = resolved.assets.map((a) => a.url)
+    listing.imageHashes = resolved.assets.map((a) => a.contentHash).filter(Boolean)
 
     // Location is strictly opt-in per listing. Prefer the coordinates the browser just sent; fall back to the
     // seller's stored profile location (only if they enabled it there).
@@ -244,20 +273,22 @@ router.post('/', requireAuth, requireVerified, async (req, res) => {
     }
 
     const assessment = await assessListingFraud({ listing: listing.toObject(), seller: sellerUser })
-    await applyFraudDecision(listing, assessment, sellerUser)
+    const { devOtp } = await applyFraudDecision(listing, assessment, sellerUser)
 
     await attachAssets(resolved.assets, listing._id)
     await User.updateOne({ _id: sellerUser._id }, { $inc: { listingsCount: 1 } })
-    await recomputeTrustScore(sellerUser._id)
+    await recomputeTrustScore(sellerUser._id, { reason: 'new listing' })
 
     const out = serializeListing(listing)
     out.locationNote = locationNote
+    out.fraudDecisionText = assessment.decisionText
     out.fraudWarning =
       listing.fraudRiskLevel === 'MEDIUM'
-        ? 'This listing was published with extra review signals. A cheap price alone is not treated as fraud.'
+        ? 'One extra step: we emailed you a 6-digit code. Enter it in My listings to publish. (A cheap price alone is never treated as fraud.)'
         : listing.fraudRiskLevel === 'HIGH'
           ? 'Listing is held for admin review and is not public yet.'
           : null
+    if (devOtp) out.devOtp = devOtp
     res.status(201).json(out)
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -282,6 +313,13 @@ async function updateListing(req, res) {
     const listing = await loadOwned(req, res)
     if (!listing) return
     const isAdmin = req.user.role === 'admin'
+    const oldPrice = Number(listing.price)
+    const before = { title: listing.title, description: listing.description, price: oldPrice }
+    const banned = await findBannedWord(req.body.title, req.body.description, req.body.brand)
+    if (banned) return res.status(400).json({ error: `Listings mentioning "${banned}" are not allowed on the campus marketplace` })
+    if (req.body.price != null && (!Number.isFinite(Number(req.body.price)) || Number(req.body.price) < 0)) {
+      return res.status(400).json({ error: 'price must be a positive number' })
+    }
     const allowed = ['title', 'description', 'price', 'askingPrice', 'condition', 'brand', 'defaultDueDays', 'lendUnit']
     for (const key of allowed) {
       if (req.body[key] !== undefined) listing[key] = req.body[key]
@@ -291,7 +329,7 @@ async function updateListing(req, res) {
 
     // Owners can only toggle active/sold/removed, and cannot lift a fraud hold or a payment reservation.
     if (req.body.status !== undefined) {
-      const locked = ['held', 'reserved'].includes(listing.status)
+      const locked = ['held', 'reserved', 'verification'].includes(listing.status)
       if (isAdmin) listing.status = req.body.status
       else if (!locked && ['active', 'sold', 'removed'].includes(req.body.status)) listing.status = req.body.status
       else return res.status(400).json({ error: 'This listing status cannot be changed right now' })
@@ -305,10 +343,50 @@ async function updateListing(req, res) {
       await attachAssets(resolved.assets, listing._id)
       await deleteAssets(dropped)
       listing.images = resolved.assets.map((a) => a.url)
+      listing.imageHashes = resolved.assets.map((a) => a.contentHash).filter(Boolean)
+    }
+    if (req.body.price != null) listing.askingPrice = Number(req.body.price)
+
+    // Content changed after publishing -> re-screen (a scammer could edit an approved listing). Only escalation
+    // to HOLD happens here; listings an admin already approved are not re-flagged.
+    const changed = before.title !== listing.title || before.description !== listing.description || Number(listing.price) < before.price
+    let escalated = false
+    if (changed && listing.status === 'active' && listing.fraudDecision !== 'approved' && !isAdmin) {
+      const seller = await User.findById(listing.seller.userId)
+      const assessment = await assessListingFraud({ listing: listing.toObject(), seller })
+      listing.fraudRiskScore = assessment.fraudRiskScore
+      listing.fraudRiskLevel = assessment.fraudRiskLevel
+      listing.fraudSignals = assessment.fraudSignals
+      listing.fraudReasons = assessment.reasons || []
+      listing.fraudFeatures = assessment.features || null
+      if (assessment.fraudRiskLevel === 'HIGH') {
+        listing.status = 'held'
+        listing.heldReason = 'fraud'
+        listing.fraudDecision = 'pending'
+        listing.fraudAction = 'HOLD'
+        escalated = true
+        await Moderation.create({
+          listing: listing.title,
+          risk: 'High',
+          reason: `Re-screened after edit: ${(assessment.fraudSignals || []).join(', ')}`,
+          seller: listing.seller?.name || 'Unknown',
+          sellerUserId: listing.seller?.userId,
+          listingId: listing._id,
+          fraudRiskScore: assessment.fraudRiskScore,
+          signals: assessment.fraudSignals,
+          reasons: assessment.reasons || [],
+          source: assessment.source,
+          status: 'pending',
+        })
+      }
     }
 
     await listing.save()
-    res.json(serializeListing(listing))
+    let alerts = 0
+    if (Number(listing.price) !== oldPrice && ['active', 'reserved'].includes(listing.status)) {
+      alerts = await notifyPriceDrop(listing, oldPrice, Number(listing.price))
+    }
+    res.json({ ...serializeListing(listing), priceDropAlertsSent: alerts, heldForReview: escalated })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
@@ -316,6 +394,41 @@ async function updateListing(req, res) {
 
 router.put('/:id', requireAuth, requireVerified, updateListing)
 router.patch('/:id', requireAuth, requireVerified, updateListing)
+
+// MEDIUM fraud risk -> "extra verification": the seller confirms the listing with the code emailed to them.
+router.post('/:id/verify', requireAuth, requireVerified, otpLimiter, async (req, res) => {
+  try {
+    const listing = await Listing.findById(req.params.id)
+    if (!listing) return res.status(404).json({ error: 'Listing not found' })
+    if (String(listing.seller?.userId) !== String(req.user._id)) return res.status(403).json({ error: 'Insufficient permissions' })
+    if (listing.status !== 'verification') return res.status(400).json({ error: 'This listing does not need verification' })
+    if (!listingOtpMatches(listing, req.user, req.body?.otp)) {
+      return res.status(400).json({ error: 'Invalid or expired code. Request a new one.' })
+    }
+    listing.status = 'active'
+    listing.fraudDecision = 'verified'
+    listing.verifyOtpHash = null
+    listing.verifyOtpExpiresAt = null
+    await listing.save()
+    res.json(serializeListing(listing))
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+router.post('/:id/verify/resend', requireAuth, requireVerified, otpLimiter, async (req, res) => {
+  try {
+    const listing = await Listing.findById(req.params.id)
+    if (!listing) return res.status(404).json({ error: 'Listing not found' })
+    if (String(listing.seller?.userId) !== String(req.user._id)) return res.status(403).json({ error: 'Insufficient permissions' })
+    if (listing.status !== 'verification') return res.status(400).json({ error: 'This listing does not need verification' })
+    const devOtp = await issueListingOtp(listing, req.user)
+    await listing.save()
+    res.json({ ok: true, message: 'A new code was sent to your college email', ...(devOtp ? { devOtp } : {}) })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
 
 // Seller opts a listing in/out of nearby discovery after publishing.
 router.put('/:id/location', requireAuth, requireVerified, async (req, res) => {

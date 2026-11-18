@@ -9,6 +9,20 @@ export function setToken(token) {
   else localStorage.removeItem('cm_token')
 }
 
+// Random per-browser id used only for duplicate-account detection (the server stores a hash of it).
+export function getDeviceId() {
+  try {
+    let id = localStorage.getItem('cm_device')
+    if (!id) {
+      id = (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`).replace(/-/g, '')
+      localStorage.setItem('cm_device', id)
+    }
+    return id
+  } catch {
+    return ''
+  }
+}
+
 async function request(path, options = {}) {
   const isForm = typeof FormData !== 'undefined' && options.body instanceof FormData
   const headers = {
@@ -17,6 +31,8 @@ async function request(path, options = {}) {
   }
   const token = getToken()
   if (token) headers.Authorization = `Bearer ${token}`
+  const device = getDeviceId()
+  if (device) headers['X-Device-Id'] = device
 
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
@@ -72,7 +88,7 @@ export const api = {
   agreeMeeting: (id, body) => request(`/transactions/${id}/meeting`, { method: 'PUT', body: JSON.stringify(body) }),
   getReviews: () => request('/reviews'),
   getModeration: () => request('/moderation'),
-  getFraudAlerts: () => request('/admin/fraud-alerts'),
+  getFraudAlerts: (status = 'pending') => request(`/admin/fraud-alerts${status === 'all' ? '?status=all' : ''}`),
   reviewListing: (id, decision) =>
     request(`/admin/listings/${id}/review`, { method: 'PUT', body: JSON.stringify({ decision }) }),
   updateModeration: (id, status) =>
@@ -105,6 +121,28 @@ export const api = {
   clearAllListingLocations: () =>
     request('/location/preferences', { method: 'PUT', body: JSON.stringify({ enabled: true, clearListings: true }) }),
   getTrustScore: (id) => request(`/users/${id}/trust-score`),
+  updateProfile: (body) => request('/users/me', { method: 'PUT', body: JSON.stringify(body) }),
+  getAvatarOptions: () => request('/users/avatar-options'),
+  getCategories: () => request('/categories'),
+  // fraud decision engine: MEDIUM-risk listings are confirmed with an emailed code
+  verifyListing: (id, otp) => request(`/listings/${id}/verify`, { method: 'POST', body: JSON.stringify({ otp }) }),
+  resendListingCode: (id) => request(`/listings/${id}/verify/resend`, { method: 'POST', body: '{}' }),
+  updateWatch: (listingId, body) => request(`/watchlist/${listingId}`, { method: 'PUT', body: JSON.stringify(body) }),
+  report: (body) => request('/reports', { method: 'POST', body: JSON.stringify(body) }),
+  myReports: () => request('/reports/mine'),
+  // admin console
+  adminReports: (status = 'open') => request(`/admin/reports?status=${status}`),
+  adminDecideReport: (id, body) => request(`/admin/reports/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+  adminUsers: (q = '') => request(`/admin/users?q=${encodeURIComponent(q)}`),
+  adminSuspend: (id, suspended, reason = '') =>
+    request(`/admin/users/${id}/suspend`, { method: 'PUT', body: JSON.stringify({ suspended, reason }) }),
+  adminAnalytics: () => request('/admin/analytics'),
+  adminSettings: () => request('/admin/settings'),
+  adminSaveSettings: (body) => request('/admin/settings', { method: 'PUT', body: JSON.stringify(body) }),
+  adminAudit: () => request('/admin/audit'),
+  adminFraudModel: () => request('/admin/fraud-model'),
+  reviewListingWithNote: (id, decision, note) =>
+    request(`/admin/listings/${id}/review`, { method: 'PUT', body: JSON.stringify({ decision, note }) }),
 }
 
 export function loadRazorpay() {

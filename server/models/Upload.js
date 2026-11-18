@@ -11,6 +11,7 @@ const uploadSchema = new mongoose.Schema(
     width: { type: Number, default: 0 },
     height: { type: Number, default: 0 },
     format: { type: String, default: '' },
+    contentHash: { type: String, default: '', index: true }, // sha256 of the original file -> reused-photo detection
     listingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Listing', default: null, index: true },
   },
   { timestamps: true }

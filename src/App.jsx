@@ -106,7 +106,13 @@ export default function App() {
 
   const handlePublish = (listing) => {
     setMyListings((l) => [hydrateListing(listing), ...l])
-    showToast(listing.status === 'held' ? 'Listing held for admin review' : 'Listing published ✓')
+    showToast(
+      listing.status === 'held'
+        ? 'Listing held for admin review'
+        : listing.status === 'verification'
+          ? 'One more step: confirm the listing with the code we emailed you'
+          : 'Listing published ✓'
+    )
   }
 
   const closePay = () => { setPayOrder(null); setPayResult(null); setPaying(false) }
@@ -204,6 +210,9 @@ export default function App() {
             item={activeProduct}
             actionLabel={activeProduct.type === 'lend' ? 'Request to borrow' : 'Pay & buy'}
             onRequestAction={handleProductAction}
+            watching={favorites.includes(activeProduct.id)}
+            onToggleWatch={toggleFavorite}
+            isOwner={String(activeProduct.seller?.userId) === String(user?.id || user?._id)}
           />
         )}
       </Modal>

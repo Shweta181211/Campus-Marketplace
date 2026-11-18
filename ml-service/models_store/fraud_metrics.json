@@ -1,0 +1,88 @@
+{
+  "model": "IsolationForest(n_estimators=400, max_samples=512) on 22 risk-oriented features, percentile-calibrated",
+  "thresholds": {
+    "LOW": "risk < 0.4",
+    "MEDIUM": "0.4 <= risk < 0.7",
+    "HIGH": "risk >= 0.7"
+  },
+  "test": {
+    "roc_auc": 0.9971,
+    "average_precision": 0.9603,
+    "at_MEDIUM_or_HIGH": {
+      "precision": 0.845,
+      "recall": 0.921,
+      "share_of_listings_flagged": 0.054
+    },
+    "at_HIGH": {
+      "precision": 1.0,
+      "recall": 0.483,
+      "share_of_listings_held": 0.024
+    },
+    "false_alarm_rate_normal_users": {
+      "medium_or_high": 0.009,
+      "high": 0.0
+    },
+    "rule_baseline_any_red_flag": {
+      "precision": 0.42,
+      "recall": 1.0,
+      "false_alarm_rate": 0.072
+    },
+    "per_archetype": {
+      "activity_spike": {
+        "n": 17,
+        "flagged_medium_or_high": 0.882,
+        "held_high": 0.0
+      },
+      "graduating_senior": {
+        "n": 105,
+        "flagged_medium_or_high": 0.114,
+        "held_high": 0.0
+      },
+      "legit_bargain": {
+        "n": 258,
+        "flagged_medium_or_high": 0.023,
+        "held_high": 0.0
+      },
+      "multi_account": {
+        "n": 27,
+        "flagged_medium_or_high": 0.926,
+        "held_high": 0.407
+      },
+      "normal": {
+        "n": 3059,
+        "flagged_medium_or_high": 0.004,
+        "held_high": 0.0
+      },
+      "price_bait": {
+        "n": 47,
+        "flagged_medium_or_high": 1.0,
+        "held_high": 0.957
+      },
+      "repeat_offender": {
+        "n": 21,
+        "flagged_medium_or_high": 1.0,
+        "held_high": 0.286
+      },
+      "spam_duplicator": {
+        "n": 30,
+        "flagged_medium_or_high": 1.0,
+        "held_high": 0.7
+      },
+      "stolen_photos": {
+        "n": 36,
+        "flagged_medium_or_high": 0.722,
+        "held_high": 0.083
+      }
+    }
+  },
+  "n_train": 8400,
+  "n_test": 3600,
+  "injected_fraud_rate": 0.0495,
+  "supervised_reference_rf_cv_roc_auc": 1.0,
+  "real_labels": {
+    "confirmed_fraud": 0,
+    "approved": 0
+  },
+  "supervised_stage": "not active yet \u2014 needs >= 10 confirmed frauds and >= 10 approved listings from admin review (run: npm run export-fraud && npm run ml:train)",
+  "trainedOn": "synthetic campus marketplace activity"
+}
