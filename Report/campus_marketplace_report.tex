@@ -1,31 +1,49 @@
+% =====================================================================
+%  Campus Marketplace -- UCS503 Software Engineering
+%  Project report (revised to match the current code base)
+%  Compile with:  pdflatex campus_marketplace_report.tex  (run 3 times)
+% =====================================================================
 \documentclass[11pt,letterpaper,oneside]{report}
 
 \usepackage[T1]{fontenc}
-\usepackage[margin=1in]{geometry}
+\usepackage{lmodern}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in,headheight=14pt]{geometry}
+\usepackage{microtype}
 \usepackage{amsmath}
-\usepackage{graphicx}
-\usepackage{xcolor}
 \usepackage{booktabs}
-\usepackage{tabularx}
+\usepackage{float}
 \usepackage{array}
+\usepackage{tabularx}
 \usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{graphicx}
 \usepackage{titlesec}
 \usepackage{fancyhdr}
-\usepackage[labelsep=period,font=small,labelfont=bf,skip=6pt]{caption}
+\usepackage[font=small,labelfont=bf,labelsep=period,skip=6pt]{caption}
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta,positioning,calc,fit,shapes.geometric,shapes.multipart}
-\usepackage[hidelinks,pdftitle={Campus Marketplace - UCS503 Software Engineering}]{hyperref}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,shapes.multipart,calc,fit,backgrounds}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{pdftitle={Campus Marketplace - UCS503 Software Engineering}}
 
-\definecolor{lg}{gray}{0.88}
+\setlength{\parindent}{1.2em}
+\setlength{\parskip}{0pt}
+\renewcommand{\arraystretch}{1.12}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 
-% ---------- chapter / section style ----------
+% ---------------------------------------------------------------- chapter style
 \titleformat{\chapter}[display]
-  {\raggedleft\bfseries}{\large Chapter \thechapter}{14pt}{\Huge}
-\titlespacing*{\chapter}{0pt}{20pt}{28pt}
-\titleformat{\section}{\Large\bfseries}{\thesection}{1em}{}
-\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{}
+  {\normalfont\raggedleft}
+  {\normalsize\bfseries\chaptertitlename\ \thechapter}
+  {14pt}
+  {\Huge}
+\titlespacing*{\chapter}{0pt}{40pt}{36pt}
+\titleformat{\section}{\normalfont\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalfont\normalsize\bfseries}{\thesubsection}{1em}{}
+\titlespacing*{\section}{0pt}{20pt}{12pt}
+\titlespacing*{\subsection}{0pt}{14pt}{8pt}
 
-% ---------- header / footer ----------
+% ---------------------------------------------------------------- header / footer
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[L]{\small UCS503 -- Software Engineering}
@@ -33,665 +51,807 @@
 \renewcommand{\headrulewidth}{0.4pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\small\thepage}\renewcommand{\headrulewidth}{0pt}}
 
-\setlength{\parskip}{4pt}
-\setlist{itemsep=2pt,topsep=4pt}
+\setlist[enumerate]{leftmargin=2.2em,itemsep=3pt}
+\setlist[itemize]{leftmargin=2.2em,itemsep=3pt}
 
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\st}[1]{\textsc{#1}}
+
+% ---------------------------------------------------------------- TikZ styles
+\tikzset{
+  >={Stealth[length=2.2mm]},
+  box/.style={draw,rectangle,fill=white,align=center,font=\scriptsize,inner sep=3pt},
+  gbox/.style={box,fill=gray!18},
+  act/.style={draw,rectangle,rounded corners=2pt,fill=white,align=center,font=\scriptsize,
+              text width=3.4cm,minimum height=0.75cm,inner sep=2pt},
+  dec/.style={draw,diamond,aspect=2.1,fill=gray!18,align=center,font=\scriptsize,inner sep=1pt,
+              text width=1.75cm},
+  uc/.style={draw,ellipse,fill=white,align=center,font=\scriptsize,minimum width=3.4cm,
+             minimum height=0.85cm,inner sep=1pt},
+  guc/.style={uc,fill=gray!18},
+  lbl/.style={font=\scriptsize\itshape,fill=white,inner sep=1pt},
+  cls/.style={draw,rectangle split,rectangle split parts=3,rectangle split part fill={gray!18,white,white},
+              font=\scriptsize,align=left,text width=4.75cm,inner sep=2.5pt},
+}
+\newcommand{\actor}[3]{% name, position, label
+  \begin{scope}[shift={#2}]
+    \draw (0,0.32) circle (0.13);
+    \draw (0,0.19) -- (0,-0.22);
+    \draw (-0.24,0.06) -- (0.24,0.06);
+    \draw (0,-0.22) -- (-0.18,-0.55);
+    \draw (0,-0.22) -- (0.18,-0.55);
+    \node[font=\scriptsize,align=center,below] at (0,-0.58) {#3};
+    \coordinate (#1) at (0,0);
+  \end{scope}}
+
+% =====================================================================
 \begin{document}
 
-% ================= COVER =================
+% ---------------------------------------------------------------- title page
 \begin{titlepage}
 \centering
-{\large\bfseries UCS503 -- Software Engineering\par}
-\vspace{2.2cm}
-{\Huge\bfseries Campus Marketplace\par}
+{\bfseries UCS503 -- Software Engineering\par}
+\vspace{2.6cm}
+{\fontsize{24}{30}\selectfont Campus Marketplace\par}
 \vspace{0.4cm}
 {\small A Verified-Student Platform for Buying, Borrowing, Selling and Lending\\
-with ML-Assisted Pricing and Fraud Detection\par}
-\vspace{1.6cm}
-{\Large\bfseries Submitted by:\par}
+with ML-Assisted Fair-Price Recommendation\par}
+\vspace{2.2cm}
+{\large\bfseries Submitted by:\par}
 \vspace{0.4cm}
+{\small
 \begin{tabular}{ll}
 1024031047 & Shweta Agarwal\\
 1024031049 & Shrasthi Singh Rathore\\
-1024031021 & Raksha Pandey
-\end{tabular}\par
-\vspace{0.5cm}
+1024031021 & Raksha Pandey\\
+\end{tabular}\par}
+\vspace{0.6cm}
 {\small Group: 3C73 \quad BE Third Year, CSE\par}
-\vspace{1.6cm}
-{\Large\bfseries Submitted to:\par}
+\vspace{2.0cm}
+{\large\bfseries Submitted to:\par}
 \vspace{0.4cm}
-Dr.\ Johnsy Bansal\par
+{\small Dr. Johnsy Bansal\par}
 \vfill
-Mid-Semester Evaluation\par
-\vspace{0.3cm}
-{\bfseries Computer Science and Engineering Department}\par
-Thapar Institute of Engineering and Technology, Patiala\par
+{\small Mid-Semester Evaluation\par}
+\vspace{0.4cm}
+{\bfseries Computer Science and Engineering Department\par}
+\vspace{0.2cm}
+{Thapar Institute of Engineering and Technology, Patiala\par}
 \end{titlepage}
 
-% ================= FRONT MATTER =================
+% ---------------------------------------------------------------- front matter
 \pagenumbering{roman}
 \setcounter{page}{1}
-
 \chapter*{Abstract}
 \addcontentsline{toc}{chapter}{Abstract}
 \thispagestyle{plain}
 
-Students on a residential campus constantly need second-hand textbooks, cycles, calculators,
-lab equipment and hostel essentials, and just as constantly have such items to pass on.
-General-purpose classified platforms are poorly suited to this need: they are open to
-anonymous strangers, offer no verification that a seller belongs to the institution, give no
-help with fair pricing, and do not support lending with due dates and returns. Campus
-Marketplace is a web application that addresses these gaps for a single campus community.
+Students on a residential campus constantly need second-hand textbooks, cycles, calculators, lab
+equipment and hostel essentials, and just as constantly have such items to pass on. General-purpose
+classified platforms are poorly suited to this need: they are open to anonymous strangers, offer no
+verification that a seller belongs to the institution, give no help with fair pricing, and do not support
+lending with due dates and returns. Campus Marketplace is a web application that addresses these
+gaps for a single campus community.
 
-The system lets students with verified college e-mail identities buy, borrow, sell and lend
-items. It is built as a React single-page application, an Express.js REST API backed by
-MongoDB, and a separate Python FastAPI service that hosts two machine-learning models: a
-gradient-boosted quantile regressor that recommends a fair price range, and an Isolation
-Forest that scores the fraud risk of every new listing from 22 listing, user and behavioural
-features. A combined decision engine publishes low-risk listings, asks the seller for an
-extra e-mail verification on medium risk, and holds high-risk listings for an administrator.
-Further modules provide e-mail OTP and Google Sign-In verification, duplicate-account
-detection, a loan life-cycle with extensions and return confirmation, a payment flow with
-server-side signature verification, price-drop alerts, student reports with chat-abuse
-reporting, privacy-preserving nearby discovery with encrypted stored locations, a
-formula-based trust score with an audit trail, a component-based avatar builder, and an
-administrator console for moderation, suspension, analytics and institution settings.
+The system lets students with verified college e-mail identities buy, borrow, sell and lend items.
+It is built as a React single-page application, an Express.js REST API backed by MongoDB, and
+a separate Python FastAPI service that hosts a fair-price recommendation model: three
+gradient-boosting quantile regressors that predict the ratio of resale price to the original price
+under monotone constraints, so that the median gives the suggested price and the calibrated
+10th--90th percentile band gives the fair range. Further modules provide e-mail OTP and Google
+Sign-In verification, a loan life cycle with extensions and return confirmation, a checkout that
+reads the price from the database, reserves the item, verifies the payment signature on the server,
+accepts gateway webhooks and refunds late payments automatically, cloud image storage with
+server-side file validation, privacy-preserving nearby discovery with blurred locations, a trust
+score for every user, and an administrator moderation queue.
 
 This report documents the requirements, the development methodology, the architecture, and
-the implementation of the system, supported by five diagrams (use case, SDLC, sequence,
-activity and class). On the held-out test split of the synthetic seed data, the price model
-reaches $R^2 = 0.986$, a mean absolute percentage error of 8.7\% and a mean absolute error of
-Rs.\ 334, and the fraud model reaches a ROC-AUC of 0.997 with a false-alarm rate below 1\% on
-honest users. These figures are reported transparently as baselines, since the models have
-not yet been trained on real campus transactions.
+the implementation of the system, supported by five diagrams (use case, SDLC, sequence, activity
+and class). On the held-out test split of the synthetic training data, the price model reaches a
+mean absolute percentage error of 8.67\,\% against 43.92\,\% for a naive baseline, with
+$R^2 = 0.987$ and 76.7\,\% coverage of its 80\,\% fair-price band; these figures are reported
+transparently as a baseline, since the model has not yet been trained on real campus transactions.
 
-\clearpage
+% ---------------------------------------------------------------- lists
+\cleardoublepage
 \tableofcontents
-\clearpage
 \listoffigures
-\clearpage
 \listoftables
 
-% ================= MAIN MATTER =================
-\clearpage
+% =====================================================================
+\cleardoublepage
 \pagenumbering{arabic}
 \setcounter{page}{1}
-
-% ---------------- Chapter 1 ----------------
 \chapter{Introduction}
 
 \section{Background and Context}
-A university campus is a small, dense economy. Every semester, first-year students buy the
-same textbooks, drafters and lab coats that graduating students are about to discard; hostel
-residents need kettles, mattresses and cycles for a few months only; and short-term needs
-such as a scientific calculator for one examination are better served by borrowing than by
-purchasing. Today this exchange happens through scattered group chats and notice boards,
-which are unsearchable, unstructured and unaccountable.
+A university campus is a small, dense economy. Every semester, first-year students buy the same
+textbooks, drafters and lab coats that graduating students are about to discard; hostel residents
+need kettles, mattresses and cycles for a few months only; and short-term needs such as a
+scientific calculator for one examination are better served by borrowing than by purchasing. Today
+this exchange happens through scattered group chats and notice boards, which are unsearchable,
+unstructured and unaccountable.
 
-Public classified websites do not solve the problem. They are open to anyone, so a buyer
-cannot tell whether the seller is a genuine fellow student; they provide no guidance on what
-a used item is worth; and they have no notion of lending, where an item changes hands for a
-limited period and must be returned. A purpose-built, campus-exclusive marketplace can
-address each of these shortcomings, and doing so is a good vehicle for applying the full
-software engineering life cycle: requirements, design, implementation and evaluation of a
-multi-tier, data-driven system.
+Public classified websites do not solve the problem. They are open to anyone, so a buyer cannot
+tell whether the seller is a genuine fellow student; they provide no guidance on what a used item
+is worth; and they have no notion of lending, where an item changes hands for a limited period
+and must be returned. A purpose-built, campus-exclusive marketplace can address each of these
+shortcomings, and doing so is a good vehicle for applying the full software engineering life cycle:
+requirements, design, implementation and evaluation of a multi-tier, data-driven system.
 
 \subsection{Problem Statement}
-Design and implement a web platform in which only verified members of a campus can list
-items for sale or for lending, discover items nearby, communicate with each other, complete
-purchases or loans with an auditable transaction history, and build a measurable
-reputation, while the system itself assists users with fair pricing and protects the
-community against fraudulent or duplicated listings.
+Design and implement a web platform in which only verified members of a campus can list items
+for sale or for lending, discover items nearby, communicate with each other, complete purchases or
+loans with an auditable transaction history, and build a measurable reputation, while the system
+itself assists sellers with a fair, explainable price and keeps every payment consistent and
+verifiable.
 
 \section{Project Objectives}
 \begin{enumerate}
-\item \textbf{Verified access:} restrict the marketplace to users whose college e-mail
-identity has been verified (OTP or Google Sign-In), and reject unverified sessions on every
-marketplace endpoint.
-\item \textbf{Complete trading workflow:} support the four intents buy, borrow, sell and
-lend, including a loan life-cycle with due dates, extensions, overdue detection and return
-confirmation.
-\item \textbf{ML-assisted pricing:} give every seller an explainable fair price range
-produced by a trained regression model, with the final price remaining the seller's
-decision.
-\item \textbf{Fraud screening:} score every new listing for anomalous behaviour, ask the
-seller for extra verification on medium risk, and route high-risk listings to an
-administrator before they become visible; let students report listings, users and chat
-messages.
-\item \textbf{Trust and privacy:} compute an explainable trust score for each user with an
-audit trail of every change, keep exact coordinates private and encrypted, and reveal meeting
-points only after both parties agree.
-\item \textbf{Maintainable architecture:} separate the user interface, the business API and
-the ML service so that each can be developed, tested and deployed independently, and verify
-the API and the models with automated test suites.
+  \item \textbf{Verified access:} restrict the marketplace to users whose college e-mail identity has been
+        verified (OTP or Google Sign-In), and reject unverified sessions on every marketplace endpoint.
+  \item \textbf{Complete trading workflow:} support the four intents buy, borrow, sell and lend, including
+        a loan life cycle with due dates, extensions, overdue detection and return confirmation.
+  \item \textbf{ML-assisted pricing:} give every seller an explainable fair-price band and a suggested
+        price produced by a trained regression model, with a labelled formula fallback and the final
+        price always remaining the seller's decision.
+  \item \textbf{Secure and consistent checkout:} take the price from the database, reserve an item while
+        one buyer pays, verify every payment signature on the server, and refund payments that
+        arrive after an item is no longer available.
+  \item \textbf{Trust and privacy:} compute a trust score for each user, keep exact coordinates private,
+        accept only validated photos uploaded by the listing owner, and reveal meeting points only
+        after both parties agree.
+  \item \textbf{Maintainable architecture:} separate the user interface, the business API and the ML
+        service so that each can be developed, tested and deployed independently, and verify the API
+        and the model with automated test suites.
 \end{enumerate}
 
 \section{Scope and Limitations}
-The system targets a single campus whose allowed e-mail domains are configured by the
-administrator. Online payment runs in a clearly labelled development mode unless Razorpay
-test credentials are supplied. The machine-learning models are trained on synthetic seed
-data sets and are therefore a demonstrator of the architecture rather than a
-production-grade valuation or fraud engine; both are built to be retrained as real trades
-and administrator decisions accumulate. These limitations are discussed again in Chapter~5.
+The system targets a single campus whose allowed e-mail domains are configured by the administrator.
+Online payment runs in a clearly labelled development mode unless Razorpay test credentials
+are supplied, and photos are kept on the server disk unless Cloudinary credentials are supplied.
+The price model is trained on a synthetic data set that encodes realistic depreciation behaviour and
+is therefore a demonstrator of the architecture rather than a production-grade valuation engine.
+These limitations are discussed again in Chapter~\ref{ch:conclusion}.
 
 \section{Organisation of the Report}
-Chapter~2 lists the stakeholders and the functional and non-functional requirements.
-Chapter~3 presents the development methodology and the design through five diagrams.
-Chapter~4 describes the implementation and evaluation, and Chapter~5 concludes with
-findings, limitations and future work.
+Chapter~\ref{ch:req} lists the stakeholders and the functional and non-functional requirements.
+Chapter~\ref{ch:design} presents the development methodology and the design through five diagrams.
+Chapter~\ref{ch:impl} describes the implementation and evaluation, and Chapter~\ref{ch:conclusion}
+concludes with findings, limitations and future work.
 
-% ---------------- Chapter 2 ----------------
-\chapter{System Requirements}
+% =====================================================================
+\chapter{System Requirements}\label{ch:req}
 
 \section{Stakeholders and User Roles}
-\begin{table}[htbp]
-\centering\small
-\caption{Stakeholders and their interaction with the system.}
-\begin{tabularx}{\textwidth}{@{}lX@{}}
+\begin{table}[H]
+\centering
+\caption{Stakeholders and their interaction with the system.}\label{tab:stake}
+\small
+\begin{tabularx}{\textwidth}{@{}L{2.6cm}X@{}}
 \toprule
 \textbf{Role} & \textbf{Description}\\
 \midrule
-Student & A verified campus member. The same account can act as buyer, borrower, seller or lender, so a single role covers all four intents.\\
-Administrator & Reviews held listings in the fraud-alert queue, decides student reports, suspends accounts, manages categories and banned words, and monitors analytics and the audit log.\\
-ML service & Internal system actor that returns price recommendations, fraud scores with explanations and model metrics to the API over HTTP.\\
-Payment gateway & External actor (Razorpay, or a signed development gateway) that creates orders and confirms payments.\\
+Student & A verified campus member. The same account can act as buyer, borrower, seller or
+lender, so a single role covers all four intents.\\
+Administrator & Reviews listings in the moderation queue, approves or rejects held listings, and
+can refund a completed payment.\\
+ML service & Internal system actor that returns fair-price recommendations to the API over HTTP.\\
+Payment gateway & External actor (Razorpay, or a signed development gateway) that creates orders,
+confirms payments, sends webhooks and processes refunds.\\
 Identity provider & Google OAuth 2.0 and an SMTP server used for verification.\\
-Image storage & Cloudinary (or local disk in development) for listing photos.\\
+Image storage & Cloudinary, which stores and resizes listing photos (local disk in development).\\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 \section{Functional Requirements}
-\begin{table}[htbp]
-\centering\small
-\caption{Functional requirements.}
-\begin{tabularx}{\textwidth}{@{}lX@{}}
+\begin{table}[H]
+\centering
+\caption{Functional requirements.}\label{tab:fr}
+\small
+\begin{tabularx}{\textwidth}{@{}L{1.0cm}X@{}}
 \toprule
 \textbf{ID} & \textbf{Requirement}\\
 \midrule
-FR1 & A user shall register with a college e-mail, verify it with a one-time password, and log in; Gmail and allowed Google accounts shall use Google Sign-In.\\
-FR2 & The system shall reject any marketplace request from an unverified user, and any administrator request from a non-administrator.\\
-FR3 & A student shall create, edit, view and remove listings for sale or lending, with category, condition, brand, age, original price, description and images.\\
-FR4 & The system shall return a fair-price range, a recommended price, a confidence value and an explanation for a new listing.\\
-FR5 & The system shall assign each new listing a fraud-risk score, level (low, medium, high) and explanation; it shall publish low-risk listings, require an e-mailed verification code for medium-risk listings, and hold high-risk listings for review.\\
-FR6 & A student shall search and filter listings, keep a watchlist, and receive price-drop alerts with an optional percentage or rupee threshold.\\
+FR1 & A user shall register with a college e-mail, verify it with a one-time password, and log in; Gmail and
+allowed Google accounts shall use Google Sign-In.\\
+FR2 & The system shall reject any marketplace request from an unverified user, and any administrator
+request from a non-administrator.\\
+FR3 & A student shall create, edit, view and remove listings for sale or lending, with category, condition,
+brand, age, original price, description and up to six photos.\\
+FR4 & The system shall return a fair-price band, a recommended price, a confidence value, an explanation
+and the source of the estimate (ML model or formula), and shall show the prices of similar campus
+listings when at least four exist.\\
+FR5 & Photos shall be uploaded when selected, checked for a real image type and size limit, stored in cloud
+storage, and referenced by URL; a listing may only use photos uploaded by its own seller.\\
+FR6 & A student shall search and filter listings and keep a watchlist.\\
 FR7 & A student shall chat with a listing owner through stored messages.\\
-FR8 & A student shall request to buy or borrow; the owner shall approve or reject, set or change the due date, and approve extensions.\\
-FR9 & The system shall track loan status (requested, active, due soon, overdue, return requested, returned, completed) and notify users.\\
-FR10 & Sales shall be settled through a payment order whose signature is verified on the server before the sale is marked paid.\\
-FR11 & Users shall be able to opt in to nearby discovery; exact coordinates shall never be returned by listing APIs.\\
-FR12 & The system shall maintain a trust score from verification, reviews, completed transactions, on-time returns, account age and reports, show its breakdown, and record every change in an audit trail.\\
-FR13 & An administrator shall view fraud alerts and approve or reject held listings, confirm or dismiss reports, suspend and restore accounts, view analytics, and manage categories and banned words.\\
-FR14 & A student shall report a listing, a user or a received chat message; three open reports shall hide a listing until it is reviewed.\\
-FR15 & A student shall edit the profile and build an avatar from components (face, hair, outfit, accessory and colours) without uploading a real photo.\\
-FR16 & The system shall detect several accounts created from one device and use it as a fraud signal.\\
+FR8 & A student shall request to borrow an item; the lender shall approve or reject, set or change the due
+date, and approve extensions.\\
+FR9 & The system shall track loan status (requested, active, due soon, overdue, return requested,
+completed) and notify users.\\
+FR10 & A purchase shall be charged at the price stored on the listing, the item shall be reserved during
+checkout, and the sale shall be marked paid only after the payment signature or a signed webhook has
+been verified on the server.\\
+FR11 & Buyers and sellers shall be able to opt in to nearby discovery separately; exact coordinates shall
+never be returned by any API.\\
+FR12 & The system shall maintain a trust score from completed transactions, on-time returns, reviews and
+upheld reports.\\
+FR13 & An administrator shall view the moderation queue, approve or reject held listings, and refund
+payments.\\
+FR14 & The system shall export real, verified sales so that the price model can be retrained on campus
+data.\\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 \section{Non-Functional Requirements}
-\begin{table}[htbp]
-\centering\small
-\caption{Non-functional requirements.}
-\begin{tabularx}{\textwidth}{@{}lX@{}}
+\begin{table}[H]
+\centering
+\caption{Non-functional requirements.}\label{tab:nfr}
+\small
+\begin{tabularx}{\textwidth}{@{}L{2.6cm}X@{}}
 \toprule
 \textbf{Attribute} & \textbf{Requirement}\\
 \midrule
-Security & Passwords hashed with bcrypt; OTPs stored only as salted hashes with expiry, attempt and resend limits; stateless JWT sessions; rate limiting on authentication, OTP and general API traffic; banned-word filtering of listings and messages; suspended accounts blocked on every request.\\
-Privacy & Exact latitude and longitude are never exposed and are stored encrypted (AES-256-GCM); approximate distance only, and only for users who opted in; device identifiers stored only as hashes.\\
-Availability & The API shall start without an installed MongoDB (in-memory fallback) and shall keep working when the ML service is down.\\
-Maintainability & Three independently runnable components with environment-based configuration and a documented REST interface.\\
-Usability & Responsive interface; clear labels for development-mode payments and for AI estimates that are not guaranteed market values.\\
-Testability & 50 automated API tests and 17 automated model tests covering authentication, listings, location, loans, payments, uploads, the fraud decision engine, reports, administration, alerts and trust score.\\
-Accountability & Every trust-score change and every administrator action is written to an append-only audit log with actor and reason.\\
+Security & Passwords hashed with bcrypt; OTPs stored only as salted hashes with expiry, attempt and
+resend limits; stateless JWT sessions; rate limiting on authentication, OTP, upload and general
+API traffic; constant-time comparison of payment signatures; uploaded files identified by their
+content, never by the client's file name.\\
+Privacy & Exact latitude and longitude are never exposed; listing positions are blurred by 80--220\,m,
+only approximate distances are shown, and stored positions expire after seven days.\\
+Consistency & An item can be reserved by only one buyer at a time; a payment is finalised exactly once
+even when the browser callback and the webhook both arrive.\\
+Availability & The API shall start without an installed MongoDB (in-memory fallback) and shall keep
+accepting listings when the ML service is down, using a labelled formula estimate.\\
+Maintainability & Three independently runnable components with environment-based configuration and a
+documented REST interface.\\
+Usability & Responsive interface; clear labels for development-mode payments, local photo storage and
+AI estimates that are not guaranteed market values.\\
+Testability & Automated API tests for authentication, listings, uploads, location, loans, payments and
+pricing, and automated sanity tests for the price model.\\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 \section{Hardware and Software Requirements}
-\begin{table}[htbp]
-\centering\small
-\caption{Development and runtime environment.}
-\begin{tabularx}{\textwidth}{@{}lX@{}}
+\begin{table}[H]
+\centering
+\caption{Development and runtime environment.}\label{tab:env}
+\small
+\begin{tabularx}{\textwidth}{@{}L{2.0cm}X@{}}
 \toprule
 \textbf{Item} & \textbf{Requirement}\\
 \midrule
 Client & Any modern browser with JavaScript; Geolocation API for optional nearby discovery.\\
-Server & Node.js runtime with npm; MongoDB (local, Atlas, or the bundled in-memory server); Python~3 for the ML service.\\
-Libraries & React, React Router, Tailwind CSS, Vite; Express, Mongoose, jsonwebtoken, bcryptjs, nodemailer, multer, Razorpay SDK, Cloudinary SDK, Google Auth Library; FastAPI, scikit-learn, pandas, NumPy, joblib.\\
-Hardware & A commodity laptop is sufficient for development and demonstration.\\
+Server & Node.js runtime with npm; MongoDB (local, Atlas, or the bundled in-memory server); Python 3
+for the ML service.\\
+Libraries & React, React Router, Tailwind CSS, Vite; Express, Mongoose, jsonwebtoken, bcryptjs, multer,
+nodemailer, Razorpay SDK, Cloudinary SDK, Google Auth Library; FastAPI, scikit-learn, pandas,
+NumPy, joblib.\\
+Services & Optional Razorpay test keys, Cloudinary account, SMTP server and Google OAuth client.\\
+Hardware & A commodity laptop is sufficient for development, model training and demonstration.\\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 \section{Constraints and Assumptions}
-All users hold an e-mail address in an allowed college domain or an allowed Google account.
-Trading takes place physically on campus, so the system arranges but does not deliver
-exchanges. No map provider key is required; location relies on the browser Geolocation API
-and geohashing only.
+All users hold an e-mail address in an allowed college domain or an allowed Google account. Trading
+takes place physically on campus, so the system arranges but does not deliver exchanges. No map
+provider key is required; location relies on the browser Geolocation API and geohashing only.
 
-% ---------------- Chapter 3 ----------------
-\chapter{Architecture and Design}
-
+% =====================================================================
+\chapter{Architecture and Design}\label{ch:design}
 This chapter presents the development methodology and the design of Campus Marketplace. All
-diagrams are drawn natively in TikZ and use a monochrome palette: black lines, white fills,
-and a light gray for emphasis.
+diagrams are drawn natively in TikZ and use a monochrome palette: black lines, white fills, and a
+light gray for emphasis.
 
 \section{Development Methodology (SDLC)}
-The project followed an iterative and incremental life cycle~\cite{larman}. Rather than
-building the whole system in one pass, the work was divided into five increments. Each
-increment was taken through the same five phases (requirements, design, implementation,
-testing, and integration review), and the feedback from the review fed directly into the
-requirements of the next increment. Figure~\ref{fig:sdlc} shows the cycle and the
-increments delivered. This model suited the project because the user interface existed first
-as a prototype on mock data, and the backend, identity, marketplace logic and
-machine-learning components were added in successive, independently testable steps.
+The project followed an iterative and incremental life cycle~\cite{larman}. Rather than building the whole
+system in one pass, the work was divided into six increments. Each increment was taken through
+the same five phases (requirements, design, implementation, testing, and integration review), and
+the feedback from the review fed directly into the requirements of the next increment.
+Figure~\ref{fig:sdlc} shows the cycle and the increments delivered. This model suited the project
+because the user interface existed first as a prototype on mock data, and the backend, identity,
+marketplace logic, machine-learning and hardening work were added in successive, independently
+testable steps. The last increment was itself driven by review feedback: the first price model
+generalised poorly, and the first image and payment designs did not survive realistic use.
 
-\begin{figure}[htbp]
+\begin{figure}[h]
 \centering
-\resizebox{\textwidth}{!}{%
-\begin{tikzpicture}[x=0.6545pt,y=-0.6545pt,font=\fontsize{8}{9.6}\selectfont,
-  phase/.style={draw,fill=gray!20,execute at begin node=\setlength{\baselineskip}{11pt},minimum width=120*0.6545pt,minimum height=88*0.6545pt,align=center,inner sep=2pt},
-  inc/.style={draw,minimum width=124*0.6545pt,minimum height=128*0.6545pt,text width=113*0.6545pt,align=flush left,execute at begin node=\setlength{\baselineskip}{9.6pt},inner sep=3pt},
-  arr/.style={-{Stealth[length=5pt]},semithick}]
-\draw[dashed] (5,5) rectangle (718,185);
-\node[anchor=north west,font=\fontsize{8}{9.6}\selectfont\bfseries,inner sep=0pt] at (12,10) {Iteration cycle (repeated for every increment)};
-\node[phase] (p1) at (75,76) {Phase 1\\\textbf{Requirement}\\\textbf{Analysis}\\Roles, features,\\constraints};
-\node[phase] (p2) at (217,76) {Phase 2\\\textbf{System}\\\textbf{Design}\\Architecture,\\data model, APIs};
-\node[phase] (p3) at (361,76) {Phase 3\\\textbf{Implementation}\\React, Express,\\FastAPI code};
-\node[phase] (p4) at (505,76) {Phase 4\\\textbf{Testing}\\API tests, manual\\checklist,\\ML metrics};
-\node[phase] (p5) at (649,76) {Phase 5\\\textbf{Integration}\\\textbf{and Review}\\Demo, feedback,\\defects found};
-\foreach \a/\b in {p1/p2,p2/p3,p3/p4,p4/p5} \draw[arr] (\a.east) -- (\b.west);
-\draw[arr] (p5.south) -- (649,155) -- node[fill=white,font=\fontsize{8}{9.6}\selectfont\itshape,inner sep=1pt] {feedback and next iteration} (75,155) -- (p1.south);
-\draw[arr] (362,185) -- node[right,font=\fontsize{8}{9.6}\selectfont\itshape] {each cycle delivers one increment} (362,228);
-\node[anchor=north west,font=\fontsize{8}{9.6}\selectfont\bfseries,inner sep=0pt] at (13,232) {Product increments};
-\node[inc] (i1) at (75,312) {\textbf{Increment 1}\\UI prototype: React (Vite) pages on mock data, shared design system.};
-\node[inc] (i2) at (219,312) {\textbf{Increment 2}\\Backend: Express and Mongoose REST API, MongoDB with in-memory fallback, seed data.};
-\node[inc] (i3) at (362,312) {\textbf{Increment 3}\\Identity: college-domain check, e-mail OTP, Google Sign-In, JWT sessions.};
-\node[inc] (i4) at (505,312) {\textbf{Increment 4}\\Marketplace logic: loans, payments, location privacy, trust score.};
-\node[inc,fill=gray!20] (i5) at (649,312) {\textbf{Increment 5}\\AI: FastAPI price and fraud models, moderation queue.};
-\foreach \a/\b in {i1/i2,i2/i3,i3/i4,i4/i5} \draw[arr] (\a.east) -- (\b.west);
-\end{tikzpicture}%
-}
-\caption{SDLC diagram: iterative and incremental model used for Campus Marketplace.}
-\label{fig:sdlc}
+\begin{tikzpicture}[
+  ph/.style={box,fill=gray!18,text width=2.35cm,minimum height=1.6cm},
+  inc/.style={box,text width=2.2cm,minimum height=2.45cm,align=left,anchor=north,
+              font=\tiny},
+  node distance=0.36cm]
+  % phases
+  \node[ph] (p1) {Phase 1\\\textbf{Requirement}\\\textbf{Analysis}\\[1pt]Roles, features,\\constraints};
+  \node[ph,right=of p1] (p2) {Phase 2\\\textbf{System}\\\textbf{Design}\\[1pt]Architecture,\\data model, APIs};
+  \node[ph,right=of p2] (p3) {Phase 3\\\textbf{Implementation}\\[1pt]React, Express,\\FastAPI code};
+  \node[ph,right=of p3] (p4) {Phase 4\\\textbf{Testing}\\[1pt]API tests, model\\tests, manual\\checklist};
+  \node[ph,right=of p4] (p5) {Phase 5\\\textbf{Integration}\\\textbf{and Review}\\[1pt]Demo, feedback,\\defects found};
+  \foreach \a/\b in {p1/p2,p2/p3,p3/p4,p4/p5} \draw[->] (\a) -- (\b);
+  \draw[->] (p5.south) -- ++(0,-0.45) -| node[pos=0.25,lbl,fill=white]{feedback and next iteration} (p1.south);
+  \begin{scope}[on background layer]
+    \node[draw,dashed,inner sep=7pt,fit={(p1)(p5)($(p1.south)+(0,-0.55)$)($(p1.north)+(0,0.4)$)}] (cyc) {};
+  \end{scope}
+  \node[font=\scriptsize\bfseries,anchor=north west,inner sep=3pt] at (cyc.north west) {Iteration cycle (repeated for every increment)};
+  % increments
+  \path (cyc.south) ++(0,-1.75) coordinate (itop);
+  \node[inc] (i1) at ($(itop)+(-6.90,0)$) {\textbf{\scriptsize Increment 1}\\[2pt]UI prototype: React (Vite) pages on mock data, shared design system.};
+  \node[inc] (i2) at ($(itop)+(-4.14,0)$) {\textbf{\scriptsize Increment 2}\\[2pt]Backend: Express and Mongoose REST API, MongoDB with in-memory fallback, seed data.};
+  \node[inc] (i3) at ($(itop)+(-1.38,0)$) {\textbf{\scriptsize Increment 3}\\[2pt]Identity: college-domain check, e-mail OTP, Google Sign-In, JWT sessions.};
+  \node[inc] (i4) at ($(itop)+(1.38,0)$) {\textbf{\scriptsize Increment 4}\\[2pt]Marketplace logic: loans, payments, location privacy, trust score, moderation.};
+  \node[inc] (i5) at ($(itop)+(4.14,0)$) {\textbf{\scriptsize Increment 5}\\[2pt]AI: FastAPI price service, fair-price band, formula fallback.};
+  \node[inc,fill=gray!18] (i6) at ($(itop)+(6.90,0)$) {\textbf{\scriptsize Increment 6}\\[2pt]Hardening: quantile price model, cloud photos, checkout reservation, webhooks, refunds.};
+  \foreach \a/\b in {i1/i2,i2/i3,i3/i4,i4/i5,i5/i6} \draw[->] (\a) -- (\b);
+  \begin{scope}[on background layer]
+    \node[draw,inner sep=6pt,fit={(i1)(i6)($(i1.north)+(0,0.45)$)}] (incs) {};
+  \end{scope}
+  \node[font=\scriptsize\bfseries,anchor=north west,inner sep=3pt] at (incs.north west) {Product increments};
+  \draw[->] (cyc.south) -- node[right,font=\scriptsize\itshape]{each cycle delivers one increment} (incs.north);
+\end{tikzpicture}
+\caption{SDLC diagram: iterative and incremental model used for Campus Marketplace.}\label{fig:sdlc}
 \end{figure}
 
 \section{Use Case Model}
-Figure~\ref{fig:usecase} shows the use cases inside the system boundary. A single Student
-actor covers buyer, borrower, seller and lender because the same account performs all four
-roles. The administrator moderates held listings (and, in the final system, also decides
-student reports, suspends accounts and manages institution settings); the ML service and the
-payment gateway are secondary actors that the system calls. Price prediction and fraud scoring \emph{extends}
-listing creation, and making a payment \emph{includes} signature verification.
+Figure~\ref{fig:usecase} shows the use cases inside the system boundary~\cite{uml}. A single Student actor
+covers buyer, borrower, seller and lender because the same account performs all four roles. The
+administrator works the moderation queue and can refund payments; the ML service and the payment
+gateway are secondary actors that the system calls. Fair-price prediction \emph{extends} listing
+creation, and making a payment \emph{includes} reserving the item and verifying the payment signature.
 
-\begin{figure}[htbp]
+\begin{figure}[h]
 \centering
-\begin{tikzpicture}[
-  uc/.style={draw,ellipse,minimum width=3.5cm,minimum height=0.95cm,align=center,font=\scriptsize,inner sep=1pt},
-  ucg/.style={uc,fill=lg},
-  assoc/.style={thick},
-  rel/.style={-{Stealth[length=5pt]},dashed},
-  rl/.style={font=\scriptsize,inner sep=1.5pt,fill=white}
-]
-\tikzset{actor/.pic={
-  \draw (0,0.55) circle (0.17);
-  \draw (0,0.38) -- (0,-0.15) (-0.28,0.22) -- (0.28,0.22) (0,-0.15) -- (-0.22,-0.65) (0,-0.15) -- (0.22,-0.65);
-}}
-% system boundary
-\draw (1.8,1.0) rectangle (12.5,-11.2);
-\node[font=\small\bfseries] at (7.15,0.65) {Campus Marketplace System};
-% student use cases
-\node[uc] (u1) at (4.3,-0.5)  {Register and Verify\\College E-mail\\(OTP / Google Sign-In)};
-\node[uc] (u2) at (4.3,-1.85) {Browse, Search\\and Filter Listings};
-\node[uc] (u3) at (4.3,-3.1)  {Manage Watchlist\\and Notifications};
-\node[uc] (u4) at (4.3,-4.35) {Create Listing\\(Sell / Lend)};
-\node[uc] (u5) at (4.3,-5.6)  {Chat with\\Listing Owner};
-\node[uc] (u6) at (4.3,-6.85) {Request to\\Buy / Borrow};
-\node[uc] (u7) at (4.3,-8.1)  {Make Payment};
-\node[uc] (u8) at (4.3,-9.3)  {Approve, Extend\\and Return Loans};
-\node[uc] (u9) at (4.3,-10.5) {Review and Rate Users};
-% admin / system use cases
-\node[ucg] (a1) at (10.2,-0.5)  {Review Fraud Alerts};
-\node[ucg] (a2) at (10.2,-1.85) {Approve / Reject\\Held Listing};
-\node[ucg] (m1) at (10.2,-3.4)  {Predict Fair\\Price Range};
-\node[ucg] (m2) at (10.2,-5.3)  {Score Listing\\Fraud Risk};
-\node[ucg] (p1) at (10.2,-8.1)  {Verify Payment\\Signature};
-% actors
-\pic at (0.5,-5.2) {actor};
-\node[font=\scriptsize,fill=white,inner sep=1pt] at (0.5,-6.15) {Student};
-\pic at (14.0,-1.1) {actor};
-\node[font=\scriptsize,align=center] at (14.0,-2.0) {Administrator};
-\pic at (14.0,-4.3) {actor};
-\node[font=\scriptsize,align=center] at (14.0,-5.2) {ML service\\(FastAPI)};
-\pic at (14.0,-8.1) {actor};
-\node[font=\scriptsize,align=center] at (14.0,-9.0) {Payment\\Gateway\\(Razorpay)};
-% associations
-\foreach \n in {u1,u2,u3,u4,u5,u6,u7,u8,u9}
-  \draw[assoc] (0.5,-5.2) -- (\n.west);
-\draw[assoc] (14.0,-1.1) -- (a1.east);
-\draw[assoc] (14.0,-1.1) -- (a2.east);
-\draw[assoc] (14.0,-4.3) -- (m1.east);
-\draw[assoc] (14.0,-4.3) -- (m2.east);
-\draw[assoc] (14.0,-8.1) -- (p1.east);
-% extends / includes
-\draw[rel] (m1.west) -- (u4.east) node[pos=0.5,above,sloped,font=\scriptsize,inner sep=1pt]{\guillemotleft extends\guillemotright};
-\draw[rel] (m2.west) -- (u4.east) node[pos=0.5,above,sloped,font=\scriptsize,inner sep=1pt]{\guillemotleft extends\guillemotright};
-\draw[rel] (u7.east) -- (p1.west) node[midway,rl]{\guillemotleft includes\guillemotright};
+\begin{tikzpicture}
+  \draw (0,0) rectangle (9.8,-11.75);
+  \node[font=\scriptsize\bfseries] at (4.9,-0.3) {Campus Marketplace System};
+  % student use cases
+  \node[uc] (u1) at (2.5,-1.3)  {Register and Verify\\College E-mail\\(OTP / Google)};
+  \node[uc] (u2) at (2.5,-2.45)  {Browse, Search and\\Nearby Filter};
+  \node[uc] (u3) at (2.5,-3.5)  {Manage Watchlist\\and Notifications};
+  \node[uc] (u4) at (2.5,-4.55)  {Upload Listing\\Photos};
+  \node[uc] (u5) at (2.5,-5.6)  {Create Listing\\(Sell / Lend)};
+  \node[uc] (u6) at (2.5,-6.65)  {Chat with\\Listing Owner};
+  \node[uc] (u7) at (2.5,-7.7)  {Request to\\Borrow};
+  \node[uc] (u8) at (2.5,-8.75)  {Buy Item\\(Make Payment)};
+  \node[uc] (u9) at (2.5,-9.8)  {Approve, Extend\\and Return Loans};
+  \node[uc] (u10) at (2.5,-11.0) {Review and Rate Users};
+  % right column
+  \node[guc] (a1) at (7.4,-1.25) {Review Moderation\\Queue};
+  \node[guc] (a2) at (7.4,-2.45) {Approve / Reject\\Held Listing};
+  \node[guc] (a3) at (7.4,-3.6) {Refund Payment};
+  \node[guc] (m1) at (7.4,-5.6) {Predict Fair\\Price Range};
+  \node[guc] (r1) at (7.4,-8.0) {Reserve Item\\for Checkout};
+  \node[guc] (v1) at (7.4,-9.5) {Verify Payment\\Signature};
+  % actors
+  \actor{stu}{(-1.5,-6.1)}{Student}
+  \actor{adm}{(11.4,-2.4)}{Administrator}
+  \actor{ml}{(11.4,-5.6)}{ML service\\(FastAPI)}
+  \actor{pg}{(11.4,-9.5)}{Payment\\Gateway\\(Razorpay)}
+  \foreach \u in {u1,u2,u3,u4,u5,u6,u7,u8,u9,u10} \draw (stu) -- (\u.west);
+  \foreach \u in {a1,a2,a3} \draw (adm) -- (\u.east);
+  \draw (ml) -- (m1.east);
+  \draw (pg) -- (v1.east);
+  \draw[dashed,->] (m1.west) -- node[lbl,above,sloped]{\guillemotleft extends\guillemotright} (u5.east);
+  \draw[dashed,->] (u8.east) -- node[lbl,above,sloped,pos=0.55]{\guillemotleft includes\guillemotright} (r1.west);
+  \draw[dashed,->] (u8.east) -- node[lbl,below,sloped,pos=0.55]{\guillemotleft includes\guillemotright} (v1.west);
 \end{tikzpicture}
-\caption{Use case diagram of Campus Marketplace.}
-\label{fig:usecase}
+\caption{Use case diagram of Campus Marketplace.}\label{fig:usecase}
 \end{figure}
 
 \section{Sequence Model}
-The system is organised as three independently runnable tiers: a React single-page
-application that talks only to the REST API through a central client module, an Express.js
-API that applies CORS, rate limiting and JWT authentication before requests reach the route
-modules and business services, and a separate FastAPI service that hosts the price and fraud
-models. Persistent data lives in MongoDB, and identity and payment providers are external
-services. Keeping the ML stack in its own service means it can be trained, replaced or
-restarted without touching the API, and the API degrades gracefully when that service is
-unreachable.
+The system is organised as three independently runnable tiers: a React single-page application
+that talks only to the REST API through a central client module, an Express.js API that applies
+CORS, rate limiting and JWT authentication before requests reach the route modules and business
+services~\cite{fielding}, and a separate FastAPI service that hosts the price model. Persistent data lives
+in MongoDB, and identity, payment and image-storage providers are external services. Keeping the
+ML stack in its own service means it can be trained, replaced or restarted without touching the API,
+and the API degrades gracefully to a formula estimate when that service is unreachable.
 
-Figure~\ref{fig:sequence} shows how these parts interact over time when a seller publishes
-a listing. The seller submits the details through the interface, which sends a request to the
-API. The API asks the ML service for a fair-price range, then for a fraud-risk score (the
-recommended price is passed in as one of the fraud features), saves the listing in MongoDB
-with the resulting status, and returns the result and its explanation to the interface for
-display.
+Figure~\ref{fig:seq} shows how these parts interact over time when a seller prices and publishes a
+listing. While the seller fills in the form, the interface asks the API for an estimate; the API
+obtains the fair-price band from the ML service and the asking prices of similar listings from
+MongoDB, and the interface shows both. When the seller confirms an asking price and publishes,
+the API requests the recommendation again, stores it on the new listing in MongoDB, and returns
+the created listing to the interface.
 
-\begin{figure}[htbp]
+\begin{figure}[h]
 \centering
 \begin{tikzpicture}[
-  part/.style={draw,fill=lg,minimum width=2.4cm,minimum height=0.9cm,align=center,font=\small\bfseries},
-  life/.style={dashed,gray},
-  msg/.style={-{Stealth[length=6pt]},thick},
-  ret/.style={-{Stealth[length=6pt]},dashed},
-  lbl/.style={above,inner sep=2pt,font=\footnotesize}
-]
-\node[part] (s)   at (0,0)    {Seller};
-\node[part] (ui)  at (3.4,0)  {React\\interface};
-\node[part] (api) at (6.8,0)  {Express\\API};
-\node[part] (ml)  at (10.2,0) {ML service};
-\node[part] (db)  at (13.6,0) {MongoDB};
-\foreach \x in {0,3.4,6.8,10.2,13.6}
-  \draw[life] (\x,-0.45) -- (\x,-8.6);
-\draw[msg] (0,-1.2)    -- (3.4,-1.2)   node[midway,lbl]{enter listing};
-\draw[msg] (3.4,-2.0)  -- (6.8,-2.0)   node[midway,lbl]{POST /listings};
-\draw[msg] (6.8,-2.8)  -- (10.2,-2.8)  node[midway,lbl]{predict price};
-\draw[ret] (10.2,-3.6) -- (6.8,-3.6)   node[midway,lbl]{fair range};
-\draw[msg] (6.8,-4.4)  -- (10.2,-4.4)  node[midway,lbl]{score fraud risk};
-\draw[ret] (10.2,-5.2) -- (6.8,-5.2)   node[midway,lbl]{risk level};
-\draw[msg] (6.8,-6.0)  -- (13.6,-6.0)  node[midway,lbl]{save listing};
-\draw[ret] (6.8,-6.8)  -- (3.4,-6.8)   node[midway,lbl]{listing created};
-\draw[ret] (3.4,-7.6)  -- (0,-7.6)     node[midway,lbl]{show result};
+  ll/.style={gbox,font=\scriptsize\bfseries,minimum width=1.9cm,minimum height=0.75cm},
+  msg/.style={->},
+  ret/.style={->,dashed},
+  mt/.style={font=\scriptsize,above,inner sep=1.5pt}]
+  \def\xs{0}\def\xr{3.2}\def\xa{6.4}\def\xm{9.6}\def\xd{12.8}
+  \node[ll] at (\xs,0) {Seller};
+  \node[ll] at (\xr,0) {React\\interface};
+  \node[ll] at (\xa,0) {Express\\API};
+  \node[ll] at (\xm,0) {ML service};
+  \node[ll] at (\xd,0) {MongoDB};
+  \foreach \x in {\xs,\xr,\xa,\xm,\xd} \draw[dashed,gray] (\x,-0.4) -- (\x,-9.4);
+  \def\d{0.6}
+  \draw[msg] (\xs,-1*\d-0.3) -- node[mt]{enter item details} (\xr,-1*\d-0.3);
+  \draw[msg] (\xr,-2*\d-0.3) -- node[mt]{POST /ai/price-predict} (\xa,-2*\d-0.3);
+  \draw[msg] (\xa,-3*\d-0.3) -- node[mt]{predict quantiles} (\xm,-3*\d-0.3);
+  \draw[ret] (\xm,-4*\d-0.3) -- node[mt]{fair band} (\xa,-4*\d-0.3);
+  \draw[msg] (\xa,-5*\d-0.3) -- node[mt,pos=0.3]{find comparables} (\xd,-5*\d-0.3);
+  \draw[ret] (\xd,-6*\d-0.3) -- node[mt,pos=0.3]{similar prices} (\xa,-6*\d-0.3);
+  \draw[ret] (\xa,-7*\d-0.3) -- node[mt]{band, comparables} (\xr,-7*\d-0.3);
+  \draw[ret] (\xr,-8*\d-0.3) -- node[mt]{show fair range} (\xs,-8*\d-0.3);
+  \draw[msg] (\xs,-9*\d-0.3) -- node[mt]{set price, publish} (\xr,-9*\d-0.3);
+  \draw[msg] (\xr,-10*\d-0.3) -- node[mt]{POST /listings} (\xa,-10*\d-0.3);
+  \draw[msg] (\xa,-11*\d-0.3) -- node[mt]{predict price} (\xm,-11*\d-0.3);
+  \draw[ret] (\xm,-12*\d-0.3) -- node[mt]{fair band} (\xa,-12*\d-0.3);
+  \draw[msg] (\xa,-13*\d-0.3) -- node[mt,pos=0.3]{save listing} (\xd,-13*\d-0.3);
+  \draw[ret] (\xa,-14*\d-0.3) -- node[mt]{listing created} (\xr,-14*\d-0.3);
+  \draw[ret] (\xr,-15*\d-0.3) -- node[mt]{show result} (\xs,-15*\d-0.3);
 \end{tikzpicture}
-\caption{Sequence diagram: publishing a listing with price recommendation and fraud screening.}
-\label{fig:sequence}
+\caption{Sequence diagram: price recommendation and publishing a listing.}\label{fig:seq}
 \end{figure}
 
 \section{Activity Model}
-Figure~\ref{fig:activity} traces the end-to-end flow from sign-in to a completed transaction.
-A user first proves a verified college identity. A seller then enters listing details, the ML
-service returns a fair-price range, and after the seller fixes an asking price the system
-computes a fraud-risk score; a high-risk listing is held and goes live only if an
-administrator approves it. A medium-risk listing (not drawn separately in the figure) waits
-for a one-time code e-mailed to the seller before it becomes active, and a low-risk listing
-is published at once. A buyer later requests the item; if the owner approves, a sale
-proceeds through payment-signature verification, while a loan proceeds through agreement on a
-meeting point and due date and ends with a lender-confirmed return. Rejections terminate the
-flow at activity final nodes.
+Figure~\ref{fig:activity} traces the end-to-end flow from sign-in to a completed transaction. A user
+first proves a verified college identity. A seller then uploads photos and enters listing details,
+and receives a fair-price band from the ML service, or a labelled formula estimate if the service
+is unreachable; after the seller fixes an asking price the listing becomes active. A buyer later
+opens the listing. A sale reserves the item and creates a payment order; an invalid signature
+releases the reservation, a payment that arrives after the item was sold to someone else is
+refunded, and a valid payment marks the item sold. A loan proceeds through the lender's approval,
+agreement on a meeting point and due date, and ends with a lender-confirmed return. Rejections
+and failures terminate the flow at activity final nodes.
+
+\section{Class Model}
+Figure~\ref{fig:class} shows the principal persistent classes. Each class maps to a Mongoose schema and a
+MongoDB collection; the attribute lists are abbreviated to the fields central to the design. User
+is the hub: it owns listings, takes part in transactions, sends and receives messages, and receives
+reviews. A Listing references the photos recorded in Upload, is the subject of transactions, and may
+be placed in the Moderation queue. A Transaction may be settled by one Payment. Types such as
+Number and ObjectId follow the Mongoose schema types.
 
 \begin{figure}[p]
 \centering
-\resizebox{!}{0.78\textheight}{%
-\begin{tikzpicture}[x=0.6545pt,y=-0.6545pt,font=\fontsize{7.5}{9}\selectfont,
-  act/.style={draw,minimum width=174*0.6545pt,minimum height=33*0.6545pt,align=center,inner sep=1pt},
-  dec/.style={draw,diamond,fill=gray!20,aspect=2.3,align=center,inner sep=0.5pt},
-  arr/.style={-{Stealth[length=5pt]},semithick},
-  lab/.style={font=\fontsize{7.5}{9}\selectfont,inner sep=1pt}]
-
-\fill (93,13) circle (5pt);
-\node[act] (a1) at (93,54) {Enter college e-mail or\\choose Google Sign-In};
-\node[dec,minimum width=145*0.6545pt,minimum height=62*0.6545pt] (d1) at (93,129) {College identity\\verified?};
-\node[act] (b1) at (352,129) {Send OTP; user\\re-enters the code};
-\node[act,minimum height=43*0.6545pt] (a2) at (93,210) {Seller enters listing details,\\receives the ML fair-price\\range and sets an asking price};
-\node[dec,minimum width=145*0.6545pt,minimum height=62*0.6545pt] (d2) at (93,293) {Fraud-risk\\level HIGH?};
-\node[act] (b2) at (352,293) {Hold listing; add to\\admin moderation queue};
-\node[dec,minimum width=120*0.6545pt,minimum height=55*0.6545pt] (d3) at (352,375) {Admin approves?};
-\node[act] (a3) at (93,374) {Listing becomes active\\in the marketplace};
-\node[act] (a4) at (93,430) {Buyer opens listing and\\sends buy / borrow request};
-\node[dec,minimum width=148*0.6545pt,minimum height=66*0.6545pt] (d4) at (93,507) {Owner approves\\request?};
-\node[act] (b3) at (352,507) {Notify requester:\\request rejected};
-\node[dec,minimum width=120*0.6545pt,minimum height=52*0.6545pt] (d5) at (93,594) {Listing type?};
-\node[act] (b4) at (352,594) {Create payment order; verify\\HMAC / Razorpay signature};
-\node[act] (a5) at (93,675) {Parties agree meeting point\\and due date; item handed over};
-\node[act] (a6) at (93,731) {Borrower returns item;\\lender confirms return};
-\node[act] (a7) at (93,789) {Mark transaction COMPLETED\\/ PAID; update trust scores};
-\coordinate (e1) at (507,375); \coordinate (e2) at (507,507); \coordinate (e3) at (93,847);
-\foreach \e in {e1,e2,e3} {\draw (\e) circle (6pt); \fill (\e) circle (3.5pt);}
-\draw[arr] (93,20) -- (a1.north);
-\draw[arr] (a1) -- (d1);
-\draw[arr] (d1.east) -- node[lab,above] {[No]} (b1.west);
-\draw[arr] (b1.north) -- (352,55) -- (a1.east);
-\draw[arr] (d1.south) -- node[lab,right] {[Yes]} (a2.north);
-\draw[arr] (a2) -- (d2);
-\draw[arr] (d2.east) -- node[lab,above] {[Yes]} (b2.west);
-\draw[arr] (b2) -- (d3);
-\draw[arr] (d2.south) -- node[lab,right] {[No]} (a3.north);
-\draw[arr] (d3.west) -- node[lab,above] {[Yes]} (a3.east);
-\draw[arr] (d3.east) -- node[lab,above] {[No]} ($(e1)+(-6pt,0)$);
-\draw[arr] (a3) -- (a4);
-\draw[arr] (a4) -- (d4);
-\draw[arr] (d4.east) -- node[lab,above] {[No]} (b3.west);
-\draw[arr] (b3.east) -- ($(e2)+(-6pt,0)$);
-\draw[arr] (d4.south) -- node[lab,right] {[Yes]} (d5.north);
-\draw[arr] (d5.east) -- node[lab,above] {[Sale]} (b4.west);
-\draw[arr] (d5.south) -- node[lab,right] {[Borrow]} (a5.north);
-\draw[arr] (a5) -- (a6);
-\draw[arr] (a6) -- (a7);
-\draw[arr] (b4.south) -- (352,789) -- (a7.east);
-\draw[arr] (a7.south) -- ($(e3)+(0,-6pt)$);
-\end{tikzpicture}%
-}
-\caption{Activity diagram: sign-in, listing, moderation and transaction flow.}
-\label{fig:activity}
+\begin{tikzpicture}[scale=0.84,transform shape,
+  act/.style={draw,rectangle,rounded corners=2pt,fill=white,align=center,font=\scriptsize,
+              text width=4.7cm,minimum height=0.75cm,inner sep=2pt},
+  sact/.style={act,text width=3.5cm},
+  dec/.style={draw,diamond,aspect=2.6,fill=gray!18,align=center,font=\scriptsize,inner sep=0.5pt},
+  fin/.style={circle,draw,inner sep=2.6pt,path picture={\fill (path picture bounding box.center) circle (1.8pt);}},
+  g/.style={font=\tiny}]
+  \node[circle,fill=black,inner sep=3pt] (st) at (0,0) {};
+  \node[act] (a1) at (0,-1.0) {Enter college e-mail or\\choose Google Sign-In};
+  \node[dec] (d1) at (0,-2.5) {College identity\\verified?};
+  \node[sact] (b1) at (6.0,-2.5) {Send OTP; user\\re-enters the code};
+  \node[act] (a2) at (0,-4.0) {Seller uploads photos and\\enters listing details};
+  \node[dec] (d2) at (0,-5.5) {ML service\\reachable?};
+  \node[sact] (b2) at (6.0,-5.5) {Use fallback formula;\\label ``formula estimate''};
+  \node[act] (a3) at (0,-7.0) {Show fair-price band; seller sets\\asking price; listing active};
+  \node[act] (a4) at (0,-8.2) {Buyer opens listing};
+  \node[dec] (d3) at (0,-9.6) {Listing type?};
+  % sale branch
+  \node[sact] (s1) at (6.0,-9.6) {Reserve item (15 min);\\create payment order};
+  \node[dec] (d4) at (6.0,-11.3) {Payment\\signature valid?};
+  \node[sact] (s2) at (11.0,-11.3) {Mark payment failed;\\release reservation};
+  \node[fin] (e2) at (11.0,-12.3) {};
+  \node[dec] (d5) at (6.0,-13.3) {Item still reserved\\for this buyer?};
+  \node[sact] (s3) at (11.0,-13.3) {Refund the payment\\automatically};
+  \node[fin] (e3) at (11.0,-14.3) {};
+  % borrow branch
+  \node[act] (l1) at (0,-11.3) {Send borrow request\\with due date};
+  \node[dec] (d6) at (0,-13.0) {Lender approves\\request?};
+  \node[sact] (l2) at (-5.4,-13.0) {Notify requester:\\request rejected};
+  \node[fin] (e4) at (-5.4,-14.0) {};
+  \node[act] (l3) at (0,-14.6) {Agree meeting point and due\\date; item handed over};
+  \node[act] (l4) at (0,-15.8) {Borrower returns item;\\lender confirms return};
+  \node[act] (fn) at (0,-17.2) {Mark transaction COMPLETED or PAID;\\notify parties; update trust scores};
+  \node[fin] (e1) at (0,-18.3) {};
+  % edges
+  \draw[->] (st) -- (a1);
+  \draw[->] (a1) -- (d1);
+  \draw[->] (d1) -- node[above,g]{[No]} (b1);
+  \draw[->] (b1.north) |- (a1.east);
+  \draw[->] (d1) -- node[right,g]{[Yes]} (a2);
+  \draw[->] (a2) -- (d2);
+  \draw[->] (d2) -- node[above,g]{[No]} (b2);
+  \draw[->] (b2.south) |- (a3.east);
+  \draw[->] (d2) -- node[right,g]{[Yes]} (a3);
+  \draw[->] (a3) -- (a4);
+  \draw[->] (a4) -- (d3);
+  \draw[->] (d3) -- node[above,g]{[Sale]} (s1);
+  \draw[->] (s1) -- (d4);
+  \draw[->] (d4) -- node[above,g]{[No]} (s2);
+  \draw[->] (s2) -- (e2);
+  \draw[->] (d4) -- node[right,g]{[Yes]} (d5);
+  \draw[->] (d5) -- node[above,g]{[No]} (s3);
+  \draw[->] (s3) -- (e3);
+  \draw[->] (d5.south) -- node[right,g,pos=0.2]{[Yes]} (6.0,-17.2) -- (fn.east);
+  \draw[->] (d3) -- node[right,g]{[Borrow]} (l1);
+  \draw[->] (l1) -- (d6);
+  \draw[->] (d6) -- node[above,g]{[No]} (l2);
+  \draw[->] (l2) -- (e4);
+  \draw[->] (d6) -- node[right,g]{[Yes]} (l3);
+  \draw[->] (l3) -- (l4);
+  \draw[->] (l4) -- (fn);
+  \draw[->] (fn) -- (e1);
+\end{tikzpicture}
+\caption{Activity diagram: sign-in, listing, checkout and loan flow.}\label{fig:activity}
 \end{figure}
-
-\section{Class Model}
-Figure~\ref{fig:class} shows the principal persistent classes. Each class maps to a Mongoose
-schema and a MongoDB collection; the attribute lists are abbreviated to the fields central to
-the design. User is the hub: it owns listings, takes part in transactions, sends and receives
-messages, and receives reviews. A Listing is the subject of transactions and may be screened
-in the Moderation queue. A Transaction may be settled by one Payment. Types such as Number
-and ObjectId follow the Mongoose schema types. Supporting collections that are not drawn
-(Notification, Watchlist, Upload, FraudReport, AuditLog and Settings) reference User and
-Listing in the same way.
 
 \begin{figure}[p]
 \centering
 \resizebox{\textwidth}{!}{%
-\begin{tikzpicture}[x=0.6545pt,y=-0.6545pt,font=\fontsize{7.5}{9}\selectfont,
-  cls/.style={draw,rectangle split,rectangle split parts=3,text width=187*0.6545pt,align=left,inner sep=2.2pt,anchor=north west},
-  mult/.style={font=\fontsize{7.5}{9}\selectfont,inner sep=1.5pt},
-  role/.style={font=\fontsize{7.5}{9}\selectfont\itshape,inner sep=1.5pt}]
-\node[cls] (rev) at (265,55) {\textbf{Review}\nodepart{two}+ rating : Number [1..5]\\+ text : String\\+ fromUserId : ObjectId\\+ forUserId : ObjectId\\+ transactionId : ObjectId\nodepart{three}+ submit() : Review};
-\node[cls] (lis) at (5,265) {\textbf{Listing}\nodepart{two}+ title : String\\+ category : String\\+ condition : String\\+ type : sale $|$ lend\\+ price : Number\\+ fairMin, fairMax : Number\\+ status : active $|$ held $|$ sold\\+ fraudRiskScore : Number\nodepart{three}+ create() : Listing\\+ update() : Listing\\+ applyFraudDecision() : void};
-\node[cls] (usr) at (265,273) {\textbf{User}\nodepart{two}+ name : String\\+ email : String\\+ role : student $|$ admin\\+ verified : Boolean\\+ trustScore : Number [0..100]\\+ locationSharing : Boolean\nodepart{three}+ register() : void\\+ verifyOtp() : Boolean\\+ login() : JWT\\+ toPublicJSON() : Object};
-\node[cls] (txn) at (525,259) {\textbf{Transaction}\nodepart{two}+ item : String\\+ type : sale $|$ borrow $|$ lend\\+ status : TxnStatus\\+ startDate, dueDate : Date\\+ extensionCount : Number\\+ meetingPoint : String\\+ agreedByBorrower : Boolean\\+ agreedByLender : Boolean\nodepart{three}+ approve() : void\\+ reject() : void\\+ extend(days) : void\\+ markReturned() : void};
-\node[cls] (mod) at (5,609) {\textbf{Moderation}\nodepart{two}+ listingId : ObjectId\\+ sellerUserId : ObjectId\\+ risk : RiskLevel\\+ fraudRiskScore : Number\\+ status : ModStatus\\+ reviewedBy : ObjectId\nodepart{three}+ enqueue() : void\\+ review(decision) : void};
-\node[cls] (msg) at (265,609) {\textbf{Message}\nodepart{two}+ conversationId : String\\+ fromUserId : ObjectId\\+ toUserId : ObjectId\\+ listingId : ObjectId\\+ body : String\\+ unread : Boolean\nodepart{three}+ send() : Message\\+ listThread() : Message[\,]};
-\node[cls] (pay) at (525,609) {\textbf{Payment}\nodepart{two}+ orderId : String\\+ transactionId : ObjectId\\+ amount : Number\\+ currency : String\\+ provider : razorpay $|$ dev\\+ status : PayStatus\\+ verified : Boolean\nodepart{three}+ createOrder() : Payment\\+ verifySignature() : Boolean};
-% Review -- User
-\draw (rev.south) -- (usr.north);
-\node[mult,anchor=north west] at (rev.south) {0..*}; \node[mult,anchor=south west] at (usr.north) {1};
-\node[role,anchor=west] at ($(rev.south)!0.5!(usr.north)$) {receives};
-% Listing -- User
-\draw (lis.east |- 0,362) -- (usr.west |- 0,362);
-\node[mult,anchor=south west] at (lis.east |- 0,362) {0..*}; \node[mult,anchor=south east] at (usr.west |- 0,362) {1};
-\node[role,anchor=north] at ($(lis.east |- 0,362)!0.5!(usr.west |- 0,362)$) {lists};
-% User -- Transaction
-\draw (usr.east |- 0,362) -- (txn.west |- 0,362);
-\node[mult,anchor=south west] at (usr.east |- 0,362) {1}; \node[mult,anchor=south east] at (txn.west |- 0,362) {0..*};
-\node[role,anchor=north] at ($(usr.east |- 0,362)!0.5!(txn.west |- 0,362)$) {party to};
-% Listing -- Moderation
-\draw (lis.south) -- (mod.north);
-\node[mult,anchor=north west] at (lis.south) {1}; \node[mult,anchor=south west] at (mod.north) {0..*};
-\node[role,anchor=west] at ($(lis.south)!0.5!(mod.north)$) {screened in};
-% User -- Message
-\draw (usr.south) -- (msg.north);
-\node[mult,anchor=north west] at (usr.south) {1}; \node[mult,anchor=south west] at (msg.north) {0..*};
-\node[role,anchor=west] at ($(usr.south)!0.5!(msg.north)$) {sends / receives};
-% Transaction -- Payment
-\draw (txn.south) -- (pay.north);
-\node[mult,anchor=north west] at (txn.south) {1}; \node[mult,anchor=south west] at (pay.north) {0..1};
-\node[role,anchor=west] at ($(txn.south)!0.5!(pay.north)$) {settled by};
-% Listing -- Transaction (is subject of)
-\draw (lis.north) -- (lis.north |- 0,20) -- (txn.north |- 0,20) -- (txn.north);
-\node[mult,anchor=south west] at (lis.north) {1}; \node[mult,anchor=south west] at (txn.north) {0..*};
-\node[role,anchor=south] at ($(lis.north |- 0,20)!0.5!(txn.north |- 0,20)$) {is subject of};
-\end{tikzpicture}%
-}
-\caption{Class diagram of the persistent domain model.}
-\label{fig:class}
+\begin{tikzpicture}
+  % ---- middle row
+  \node[cls] (lst) at (0,0) {\textbf{Listing}
+    \nodepart{second}
+    + title : String\\
+    + category : String\\
+    + condition : String\\
+    + type : buy | lend\\
+    + price : Number\\
+    + originalPrice : Number\\
+    + ageMonths : Number\\
+    + recommendedPrice : Number\\
+    + fairMin, fairMax : Number\\
+    + aiSource : ml | heuristic\\
+    + status : active | reserved | held |\\
+    \quad sold | removed\\
+    + images : String[0..6]\\
+    + reservedUntil : Date
+    \nodepart{third}
+    + create() : Listing\\
+    + update() : Listing\\
+    + reserve(buyer) : Boolean\\
+    + release() : void};
+  \node[cls] (usr) at (6.4,0) {\textbf{User}
+    \nodepart{second}
+    + name : String\\
+    + email : String\\
+    + role : student | admin\\
+    + verified : Boolean\\
+    + trustScore : Number [0..100]\\
+    + locationSharing : Boolean
+    \nodepart{third}
+    + register() : void\\
+    + verifyOtp() : Boolean\\
+    + login() : JWT\\
+    + toPublicJSON() : Object};
+  \node[cls] (txn) at (12.8,0) {\textbf{Transaction}
+    \nodepart{second}
+    + item : String\\
+    + type : bought | borrowed\\
+    + status : TxnStatus\\
+    + startDate, dueDate : Date\\
+    + extensionCount : Number\\
+    + meetingPoint : String\\
+    + agreedByBorrower : Boolean\\
+    + agreedByLender : Boolean
+    \nodepart{third}
+    + approve() : void\\
+    + reject() : void\\
+    + extend(days) : void\\
+    + markReturned() : void};
+  % ---- top row
+  \node[cls,text width=4.2cm] (upl) at (-1.3,7.0) {\textbf{Upload}
+    \nodepart{second}
+    + ownerId : ObjectId\\
+    + listingId : ObjectId\\
+    + url : String\\
+    + provider : cloudinary | local\\
+    + bytes : Number
+    \nodepart{third}
+    + save(buffer) : Upload\\
+    + remove() : Boolean};
+  \node[cls] (rev) at (6.4,7.0) {\textbf{Review}
+    \nodepart{second}
+    + rating : Number [1..5]\\
+    + text : String\\
+    + fromUserId : ObjectId\\
+    + forUserId : ObjectId\\
+    + transactionId : ObjectId
+    \nodepart{third}
+    + submit() : Review};
+  % ---- bottom row
+  \node[cls] (mod) at (0,-7.6) {\textbf{Moderation}
+    \nodepart{second}
+    + listingId : ObjectId\\
+    + sellerUserId : ObjectId\\
+    + reason : String\\
+    + status : ModStatus\\
+    + reviewedBy : ObjectId
+    \nodepart{third}
+    + enqueue() : void\\
+    + review(decision) : void};
+  \node[cls] (msg) at (6.4,-7.6) {\textbf{Message}
+    \nodepart{second}
+    + conversationId : String\\
+    + fromUserId : ObjectId\\
+    + toUserId : ObjectId\\
+    + listingId : ObjectId\\
+    + body : String\\
+    + unread : Boolean
+    \nodepart{third}
+    + send() : Message\\
+    + listThread() : Message[]};
+  \node[cls] (pay) at (12.8,-7.6) {\textbf{Payment}
+    \nodepart{second}
+    + orderId : String\\
+    + transactionId : ObjectId\\
+    + amount : Number\\
+    + provider : razorpay | dev\\
+    + status : created | paid |\\
+    \quad failed | cancelled | refunded\\
+    + verified : Boolean
+    \nodepart{third}
+    + createOrder() : Payment\\
+    + verifySignature() : Boolean\\
+    + finalize() : void\\
+    + refund(reason) : void};
+  % ---- associations
+  \draw (lst.east) -- node[above,font=\scriptsize,pos=0.12]{0..*} node[above,font=\scriptsize,pos=0.88]{1}
+        node[below,lbl]{lists} (usr.west);
+  \draw (usr.east) -- node[above,font=\scriptsize,pos=0.12]{1} node[above,font=\scriptsize,pos=0.88]{0..*}
+        node[below,lbl]{party to} (txn.west);
+  \draw (rev.south) -- node[right,font=\scriptsize,pos=0.08]{0..*} node[right,font=\scriptsize,pos=0.92]{1}
+        node[lbl,midway]{receives} (usr.north);
+  \draw (lst.south) -- node[right,font=\scriptsize,pos=0.08]{1} node[right,font=\scriptsize,pos=0.92]{0..*}
+        node[lbl,midway]{placed in} (mod.north);
+  \draw (usr.south) -- node[right,font=\scriptsize,pos=0.08]{1} node[right,font=\scriptsize,pos=0.92]{0..*}
+        node[lbl,midway]{sends / receives} (msg.north);
+  \draw (txn.south) -- node[right,font=\scriptsize,pos=0.08]{1} node[right,font=\scriptsize,pos=0.92]{0..1}
+        node[lbl,midway]{settled by} (pay.north);
+  \draw (upl.south) -- node[right,font=\scriptsize,pos=0.08]{0..6} node[right,font=\scriptsize,pos=0.9]{0..1}
+        node[lbl,midway]{photo of} (upl.south |- lst.north);
+  \draw ($(lst.north)+(1.6,0)$) node[above right,font=\scriptsize]{1} -- (1.6,9.6)
+        -- node[lbl,above]{is subject of} (12.8,9.6) -- (txn.north) node[above right,font=\scriptsize]{0..*};
+\end{tikzpicture}}
+\caption{Class diagram of the persistent domain model.}\label{fig:class}
 \end{figure}
 
-% ---------------- Chapter 4 ----------------
-\chapter{Implementation}
+% =====================================================================
+\chapter{Implementation}\label{ch:impl}
 
 \section{Technology Stack}
-\begin{table}[htbp]
-\centering\small
-\caption{Technology stack by layer.}
-\begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}p{4.2cm}X@{}}
+\begin{table}[h]
+\centering
+\caption{Technology stack by layer.}\label{tab:stack}
+\small
+\begin{tabularx}{\textwidth}{@{}L{2.0cm}L{4.0cm}X@{}}
 \toprule
 \textbf{Layer} & \textbf{Technology} & \textbf{Purpose}\\
 \midrule
 Frontend & React 19, React Router 7, Vite, Tailwind CSS~\cite{react} & Single-page UI, protected routes, filters, favourites, dashboards.\\
 API & Node.js, Express 4~\cite{express}, Mongoose & REST endpoints, validation, business rules.\\
-Database & MongoDB~\cite{mongo} & Persistence for users, listings, loans, messages, payments and reviews.\\
+Database & MongoDB~\cite{mongodb} & Persistence for users, listings, loans, messages, payments, uploads and reviews.\\
 Security & jsonwebtoken, bcryptjs, express-rate-limit & Sessions~\cite{jwt}, password hashing, throttling.\\
 Identity & Google Auth Library, nodemailer & OAuth 2.0 sign-in~\cite{oauth} and OTP e-mail.\\
-Payments & Razorpay SDK, HMAC-SHA256~\cite{hmac} & Order creation, signature verification, webhooks and refunds.\\
-Storage & Cloudinary, multer & Validated photo upload, resizing and clean-up.\\
-ML service & Python, FastAPI~\cite{fastapi}, scikit-learn~\cite{sklearn}, pandas, joblib & Quantile price regression and fraud anomaly scoring.\\
+Payments & Razorpay SDK, HMAC-SHA256~\cite{hmac} & Order creation, signature and webhook verification, refunds.\\
+Storage & multer, Cloudinary SDK~\cite{cloudinary} & Photo upload, resizing and CDN delivery; local disk in development.\\
+ML service & Python, FastAPI~\cite{fastapi}, scikit-learn~\cite{sklearn}, pandas, joblib & Quantile price regression and model serving.\\
 Quality & oxlint, Node test runner, Python unittest & Static analysis, API tests and model tests.\\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-The repository is organised so that each tier can be run on its own: \texttt{src/} holds the
-React pages and components; \texttt{server/models}, \texttt{server/routes},
-\texttt{server/middleware} and \texttt{server/utils} hold the Mongoose schemas, REST routers,
-authentication and rate-limit middleware, and business services; \texttt{server/seed.js}
-creates demonstration data; and \texttt{ml-service/} contains the FastAPI application, the
-training scripts, the seed data set and the serialised models.
+The repository is organised so that each tier can be run on its own: \code{src/} holds the React pages
+and components; \code{server/models}, \code{server/routes}, \code{server/middleware} and \code{server/utils}
+hold the Mongoose schemas, REST routers, authentication and rate-limit middleware, and business services;
+\code{server/seed.js} creates demonstration data; \code{server/scripts} exports real sales for retraining and
+migrates old inline images to cloud storage; and \code{ml-service/} contains the FastAPI application, the
+shared feature-engineering module, the training scripts, the model tests and the serialised model.
 
 \section{Frontend}
-The interface is a React single-page application with ten routes: sign-in and the Google
-callback, a dashboard, Buy/Borrow, Sell/Lend, My Listings, Messages, Transactions,
-Notifications, Profile and the administrator console. A Protected wrapper redirects
-unauthenticated visitors to the sign-in page. All network access goes through one module,
-\texttt{src/api.js}, which attaches the JWT to each request. During development Vite proxies
-\texttt{/api} to the Express server, which removed the cross-origin problems that had
-initially appeared between the two ports.
+The interface is a React single-page application with eleven routes: sign-in and the Google callback, a
+dashboard, Buy/Borrow, Sell/Lend, My Listings, Messages, Transactions (loans and payments), Notifications,
+Profile and the administrator moderation page. A \code{Protected} wrapper redirects unauthenticated visitors
+to the sign-in page. All network access goes through one module, \code{src/api.js}, which attaches the JWT
+to each request. During development Vite proxies \code{/api} to the Express server, which removed the
+cross-origin problems that had initially appeared between the two ports.
 
-Listings originally referenced Lucide icon components, which cannot be stored in a database.
-The schema therefore stores a string \texttt{iconKey} and the client maps it back to a
-component when a listing is rendered (\texttt{hydrateListing}).
-
-The final interface adds the components that expose the AI and trust features to users: a
-price-insight panel, a verification panel in which a seller enters the e-mailed code for a
-medium-risk listing, a report button on listings and received chat messages, a price-drop
-alert control on the listing page, a trust-score breakdown with its change history on the
-profile, an SVG avatar builder, and an administrator console with tabs for fraud alerts,
-reports, users, analytics, settings, model metrics and the audit log. The categories offered
-to sellers are loaded from the server so that administrators can enable, disable or add
-them.
+The Sell/Lend page uploads each photo as soon as it is picked and shows the AI price insight: the fair
+band, the suggested asking price, a badge that says whether the estimate came from the ML model or the
+formula, the confidence, and, when available, the median and middle half of similar campus listings.
+A marker shows whether the seller's own price is above, within or below the estimate. Listings originally
+referenced Lucide icon components, which cannot be stored in a database; the schema therefore stores a
+string \code{iconKey} and the client maps it back to a component when a listing is rendered
+(\code{hydrateListing}).
 
 \section{Backend REST API}
-The Express application applies CORS, JSON parsing with a body-size limit, a global rate
-limiter and an optional-authentication middleware before mounting the routers summarised in
-Table~\ref{tab:api}. Every marketplace route is wrapped by \texttt{requireAuth} and
-\texttt{requireVerified}; administrator routes additionally use \texttt{requireAdmin}. A
-health endpoint reports the database state, the payment mode and the ML service address.
+The Express application applies CORS, JSON parsing with a 1\,MB body limit, a global rate limiter
+and an optional-authentication middleware before mounting the routers summarised in Table~\ref{tab:api}.
+The payment webhook is mounted before the JSON parser because the gateway signs the raw request body.
+Every marketplace route is wrapped by \code{requireAuth} and \code{requireVerified}; administrator routes
+additionally use \code{requireAdmin}. A health endpoint reports the database state, the payment mode,
+the image-storage provider and the ML service address.
 
-\begin{table}[htbp]
-\centering\small
-\caption{REST API modules (all under \texttt{/api}).}
-\label{tab:api}
-\begin{tabularx}{\textwidth}{@{}l l X@{}}
+\begin{table}[h]
+\centering
+\caption{REST API modules (all under \code{/api}).}\label{tab:api}
+\small
+\begin{tabularx}{\textwidth}{@{}L{2.2cm}L{2.7cm}X@{}}
 \toprule
 \textbf{Module} & \textbf{Prefix} & \textbf{Operations}\\
 \midrule
-Auth & \texttt{/auth} & register, resend-otp, verify, login, logout, me, google, google/start, google/callback\\
-Listings & \texttt{/listings} & search and list, mine, read, create, update, delete, verify, resend verification code, location\\
-Transactions & \texttt{/transactions} & request, approve, reject, due-date, return, extend, meeting\\
-Payments & \texttt{/payments} & create-order, verify, dev-complete, read\\
-Messages & \texttt{/messages} & list conversations, read thread, send\\
-Watchlist & \texttt{/watchlist} & list, add, update alert threshold, remove\\
-Reports & \texttt{/reports} & report listing, user or message; my reports\\
-Uploads & \texttt{/uploads} & status, upload images, delete image\\
-Notifications & \texttt{/notifications} & list, mark as read\\
-Location & \texttt{/location} & preferences, update position, nearby\\
-Users, reviews & \texttt{/users} & profile, update profile and avatar, avatar options, trust-score, reviews\\
-AI & \texttt{/ai} & price-predict, fraud-score\\
-Admin & \texttt{/admin} & fraud-alerts, review of a held listing, reports and decisions, users and suspension, analytics, settings, audit log, fraud-model metrics\\
+Auth & \code{/auth} & register, resend-otp, verify, login, logout, me, domains, google, google/start, google/callback\\
+Listings & \code{/listings} & search and list (with nearby filter), mine, read, create, update, delete, location\\
+Uploads & \code{/uploads} & storage status, upload images, delete an unused image\\
+Transactions & \code{/transactions} & list, request, approve, reject, due-date, return, extend, meeting\\
+Payments & \code{/payments} & config, history, create-order, verify, dev-complete, webhook, refund, read\\
+Messages & \code{/messages} & list conversations, read thread, send\\
+Watchlist & \code{/watchlist} & list, add, remove\\
+Notifications & \code{/notifications} & list, mark as read\\
+Location & \code{/location} & preferences, update position, nearby\\
+Users, reviews & \code{/users}, \code{/reviews} & profile, trust-score, reviews\\
+AI & \code{/ai} & price-predict (with campus comparables)\\
+Admin & \code{/admin} & moderation queue, review of a held listing\\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 \section{Authentication and Verified Access}
-Registration accepts only addresses in the configured college domains. The server generates
-a one-time password, stores only a salted hash of it together with an expiry time, an
-attempt counter and a resend counter, and delivers it by SMTP (or returns it in the response
-when a development flag is set). Passwords are hashed with bcrypt. Verification failures,
-expired codes and rapid resends are limited by dedicated rate limiters.
+Registration accepts only addresses in the configured college domains and passwords of at least eight
+characters; a Gmail address is redirected to Google Sign-In because Google already verifies that mailbox.
+The server generates a one-time password, stores only a salted hash of it together with an expiry time,
+an attempt counter and a resend counter, and delivers it by SMTP (or returns it in the response when a
+development flag is set). Passwords are hashed with bcrypt. Verification failures, expired codes and rapid
+resends are limited by dedicated rate limiters.
 
-Users with a Google account follow the OAuth 2.0 authorization-code flow~\cite{oauth}: the
-API redirects to Google's account picker, exchanges the returned code, checks that the e-mail
-address is verified by Google and belongs to an allowed domain, and then issues the same
-JWT~\cite{jwt} that password login produces. Because the token carries only the user
-identity, the API remains stateless; the verified flag and role are re-read from the database
-on every request, so revoking verification or suspending an account takes effect
+Users with a Google account follow the OAuth 2.0 authorization-code flow~\cite{oauth}: the API redirects
+to Google's account picker, exchanges the returned code, checks that the e-mail address is verified
+by Google and belongs to an allowed domain, and then issues the same JWT~\cite{jwt} that password login
+produces. Because the token carries only the user identity, the API remains stateless; the verified
+flag and role are re-read from the database on every request, so revoking verification takes effect
 immediately.
 
-To detect duplicate accounts, the browser sends a random per-device identifier with every
-request. The server stores only a peppered SHA-256 hash of it on the user, refuses new
-sign-ups once a configurable number of accounts already exist on one device, and reports the
-number of other accounts sharing a device as the \emph{linked accounts} fraud feature.
-
-\section{Listings, Fair-Price Assistance and Fraud Screening}
-
+\section{Listings, Fair-Price Assistance and Photo Storage}
 \subsection{Creating a listing}
-When a seller publishes a listing, the API validates the input, rejects disabled categories
-and banned words, requests a price recommendation, stores the recommended range on the
-listing, and then assesses fraud risk. If the ML service cannot be reached, the listing is
-still created: the price falls back to the formula of Table~\ref{tab:cond} and the fraud
-check to a rule-based score with the same thresholds, and both are labelled as fallbacks in
-the interface. When an active listing is later edited, it is screened again so that a
-listing cannot be turned into a scam after it has been published.
+When a seller publishes a listing, the API validates the input, requests a price recommendation, and
+stores the recommended price, the fair band, the confidence, the explanation and the source of the
+estimate on the listing. It then resolves the submitted photo URLs against the seller's own uploads,
+applies the optional location choice, increments the seller's listing count and recomputes the
+seller's trust score. If the ML service cannot be reached, the listing is still created with the
+formula estimate described below, and the interface labels it as such.
 
 \subsection{Price recommendation}
-The price model predicts the scale-free target $\log(\text{price}/\text{original price})$, so
-that a Rs.\ 900 calculator and a Rs.\ 40{,}000 laptop are learned on the same scale. Its 28
-encoded features are the logarithm of the original price, the age in months, the condition,
-the demand, a brand tier, sale or lend with the lending unit, the category, and an item class
-inferred from the title (phone, laptop, textbook, cycle and others). Three histogram
-gradient-boosting regressors~\cite{friedman} are trained with the quantile loss at the 10th,
-50th and 90th percentiles: the median gives the recommended price and the outer quantiles the
-fair range. Monotone constraints guarantee that an older item is never priced higher and a
-better condition never lower. Because raw quantile models tend to under-cover, the band is
-widened by conformalised quantile regression~\cite{romano} on a held-out calibration split
-until about 80\% of true prices fall inside it. The reported confidence decreases as the
-band widens relative to the price. The condition factors of Table~\ref{tab:cond} are now
-used only by the fallback formula when the ML service is offline. The seller can ignore the
-suggestion; the asking price is always the seller's choice.
+The model does not predict a rupee amount directly. Resale prices on campus range from about Rs.~40
+to Rs.~80{,}000, and a tree model trained on raw prices learns mostly how expensive an item is and
+very little about depreciation. The ML service therefore predicts the scale-free target
+$\log(\text{price}/\text{MRP})$ and multiplies the result back by the original price, so that a
+calculator and a laptop are learned on the same scale.
 
-\begin{table}[htbp]
-\centering\small
-\caption{Condition factors used by the fair-price formula.}
-\label{tab:cond}
+Each request is encoded into 28 features: the logarithm of the original price, the age in months,
+the condition (ordinal), the demand, a brand tier (budget, standard or premium), a lend flag and the
+logarithm of the lend period, a one-hot category (eight values) and a one-hot item class (thirteen
+values). The item class (calculator, phone, laptop, textbook, cycle, and so on) is recognised from the
+title and brand with regular expressions; each class carries a typical campus MRP, which replaces an
+original price below Rs.~80, since such a value is almost always a typing error or a rent typed into
+the wrong field.
+
+Three histogram-based gradient-boosting regressors~\cite{friedman,lightgbm} are trained with the quantile
+loss~\cite{koenker} at the 10th, 50th and 90th percentiles. Monotone constraints guarantee that an older
+item is never valued higher, and that a better condition or a higher demand never lowers the value,
+even where training data are thin. The median is the suggested price and the outer quantiles form the
+fair band. Because raw quantile models usually under-cover, the band is widened by an offset learned on
+a separate calibration split (conformalised quantile regression~\cite{romano}) so that it aims at 80\,\%
+coverage. Sale prices are then capped at 97\,\% of the original price; rents are capped at 25\,\% of it
+with minimums of Rs.~10 per day, Rs.~40 per week and Rs.~100 per semester; and all prices are rounded to
+amounts a person would type. The confidence falls as the band becomes wider relative to the price and
+drops by 15 points when a typical MRP had to be assumed.
+
+The API passes the model's answer through unchanged; an earlier version blended it with a fixed formula,
+which hid the model's output. If the service is down, or its answer is more than four times above or
+below the formula value, the API instead uses a depreciation formula: the original price times a
+condition factor (Table~\ref{tab:cond}), an age decay of $\max(0.22,\,1-0.012\cdot\text{months})$ and a
+category factor, multiplied for lending by 2\,\%, 7\,\% or 25\,\% for a day, week or semester. Separately,
+when at least four active or sold listings share the category, type and condition, the API reports their
+median and interquartile range as a live campus signal. The seller can ignore every suggestion; the
+asking price is always the seller's choice.
+
+\begin{table}[h]
+\centering
+\caption{Condition factors used by the fallback fair-price formula.}\label{tab:cond}
+\small
 \begin{tabular}{@{}lcccc@{}}
 \toprule
 \textbf{Condition} & New & Like New & Good & Fair\\
@@ -701,361 +861,276 @@ suggestion; the asking price is always the seller's choice.
 \end{tabular}
 \end{table}
 
-\subsection{Fraud scoring}
-For each new listing the API assembles 22 features at three levels (Table~\ref{tab:fraudfeat}).
-Each feature is oriented so that a larger value means more risk and is clipped on its safe
-side, so that unusually \emph{good} behaviour (a four-year-old account, a long description, a
-price above the fair range) can never make a listing look anomalous. The FastAPI service
-evaluates the vector with an Isolation Forest~\cite{liu} of 400 trees, which isolates
-anomalies with few random splits and needs no fraud labels. The raw anomaly value is
-calibrated to a fraud risk score between 0 and 1 by interpolating between percentiles of the
-training scores. As a guardrail, two or more independent rule-based red flags always raise the
-score to at least the medium threshold.
-
-\begin{table}[htbp]
-\centering\small
-\caption{Fraud-model features by level.}
-\label{tab:fraudfeat}
-\begin{tabularx}{\textwidth}{@{}lX@{}}
-\toprule
-\textbf{Level} & \textbf{Features}\\
-\midrule
-Listing & Price below the AI fair price; price below the median of comparable campus listings; discount on an expensive item; price; short title; short description; same title re-posted; copied description; no photos; photos already used by another seller (SHA-256 of the uploaded file); phone, UPI or ``pay outside the app'' text; urgency words.\\
-User & New account; unverified e-mail; other accounts on the same device; confirmed reports; open reports; low trust score.\\
-Behavioural & Listings in the last hour; listings in the last 24 hours; outgoing messages in the last hour; transactions in the last 24 hours.\\
-\bottomrule
-\end{tabularx}
-\end{table}
-
-A combined decision engine maps the score to an action (Table~\ref{tab:decision}). A low price
-on its own is only one of the 22 inputs, so a genuine bargain from an established seller stays
-low risk. Every score is returned with up to three human-readable reasons, computed by
-occlusion: each feature in turn is reset to its typical value and the drop in risk is
-measured. The reasons are shown to the seller and in the administrator's fraud queue.
-
-\begin{table}[htbp]
-\centering\small
-\caption{Combined AI decision engine.}
-\label{tab:decision}
-\begin{tabularx}{\textwidth}{@{}llX@{}}
-\toprule
-\textbf{Risk score} & \textbf{Level} & \textbf{Action}\\
-\midrule
-$< 0.40$ & Low & Listing is published immediately.\\
-$0.40$--$0.70$ & Medium & Listing stays hidden until the seller enters a six-digit code e-mailed to the college address; it is also queued for optional review.\\
-$\geq 0.70$ & High & Listing is held, a moderation record is created, and it stays hidden until an administrator approves it (Figure~\ref{fig:activity}).\\
-\bottomrule
-\end{tabularx}
-\end{table}
-
-Every listing stores the feature vector it was scored with. An export script turns
-administrator decisions into labels (rejected or confirmed-report listings as fraud, approved
-or cleanly sold listings as genuine); once at least ten of each exist, retraining adds a
-Random Forest classifier~\cite{breiman} on these real labels and blends it equally with the
-anomaly score.
+\subsection{Photo upload and cloud storage}
+Photos are sent as multipart form data to \code{POST /api/uploads/images} as soon as the seller selects
+them. The server identifies the real file type from its leading bytes (JPEG, PNG, WebP or GIF) instead of
+trusting the file name or MIME type, enforces 5\,MB per photo and six photos per listing, and limits
+upload bursts and the number of unused uploads per user. With Cloudinary credentials configured, each
+photo is resized to at most 1600 pixels and stored in the cloud; otherwise it is written to the server
+disk and the interface states that this storage is not durable. Every stored file is recorded in an
+\code{Upload} document. A listing may reference only URLs that the same seller uploaded and that are not
+attached to another listing, so a listing stores URLs and never inline image data. Editing a listing
+deletes photos that were dropped, removing a listing deletes all of its photos, and uploads that were
+never attached are cleaned up after 24 hours. A migration script moves old inline images to the cloud.
 
 \section{Loan and Transaction Life Cycle}
 Each transaction document carries a status that moves through a small state machine. A borrow
-request starts as \textsc{requested}; when the lender approves it becomes \textsc{active}. A
-utility function derives \textsc{due soon} and \textsc{overdue} from the due date and is
-applied when loans are listed and refreshed, which also raises notifications. The borrower
-marks the item \textsc{return requested}; the lender's confirmation completes the loan as
-\textsc{completed}. Extension requests are stored in an extension history and must be
-approved by the lender. A purchase instead starts as \textsc{payment pending} and becomes
-\textsc{paid} only after the payment is verified. Rejected and cancelled requests end as
-\textsc{rejected} or \textsc{cancelled}.
+request starts as \st{requested}; when the lender approves it becomes \st{active}. A utility function
+derives \st{due soon} (within two days of the due date) and \st{overdue}; a background job applies it
+every five minutes and raises notifications, without repeating the same notice within twelve hours.
+The borrower marks the item \st{return requested}; the lender's confirmation completes the loan as
+\st{completed}. Extension requests are stored in an extension history and must be approved by the
+lender. A purchase instead starts as \st{payment pending} and becomes \st{paid} only after the
+payment is verified. Rejected and cancelled requests end as \st{rejected} or \st{cancelled}, and a
+student cannot request their own listing.
 
 \section{Payments}
-Creating a purchase produces a Payment document with an order identifier. With Razorpay keys
-configured, the server creates a Razorpay order and later validates the checkout signature;
-without keys, a development gateway signs the order with an HMAC~\cite{hmac} using a
-server-side secret. In both modes \texttt{POST /api/payments/verify} recomputes the signature
-and the sale is marked paid only if it matches; a tampered signature fails. The price is always
-read from the listing in the database, a buyer cannot purchase his or her own listing, and a
-listing is reserved for 15 minutes during checkout so that two students cannot pay for the
-same item. A signed, idempotent webhook completes payments even if the browser is closed, a
-late payment for an item that is already sold is refunded automatically, and refunds can be
-issued only by an administrator. The interface labels development mode clearly so that it is
-never mistaken for a real charge.
+Creating an order reads the price from the listing in the database, so any amount sent by the browser
+is ignored, and a student cannot buy their own item. The listing is then reserved for the buyer with
+a single atomic update (15 minutes by default), so two students cannot obtain orders for the same item;
+earlier unpaid orders of the same buyer are superseded. With Razorpay keys configured, the server creates
+a Razorpay order and later validates the checkout signature; without keys, a development gateway signs the
+order with an HMAC~\cite{hmac} using a server-side secret. In both modes \code{POST /api/payments/verify}
+recomputes the signature and compares it in constant time; a tampered signature fails and releases the
+reservation.
+
+A payment is finalised exactly once: the first caller atomically claims it, so the browser callback and
+the gateway webhook can both arrive safely. The webhook (\code{payment.captured}, \code{order.paid},
+\code{payment.failed}) is verified with its own HMAC secret over the raw body and completes the purchase
+even if the buyer closes the tab right after paying. If a payment completes after the reservation expired
+and the item was sold to someone else, it is refunded automatically and the buyer is notified; an
+administrator can also refund a paid order, which puts the item back on sale. Abandoned reservations are
+released by a housekeeping job. Signatures and gateway payloads are never sent to the browser, and the
+interface labels development mode clearly so that it is never mistaken for a real charge.
 
 \section{Location Privacy}
-Nearby discovery is off by default and is switched on from the profile page. The server
-stores the position only for opted-in users, derives an approximate geohash~\cite{sinnott}
-for display, and returns distances rounded to values such as ``about 1.2 km away''. Exact
-latitude and longitude are removed from every public serializer and are stored encrypted
-with AES-256-GCM, so that a copy of the database does not reveal where students are. Stored
-positions expire after a configurable period. A meeting point entered for a loan is returned only after both
-the borrower and the lender have agreed to it.
+Nearby discovery has two independent opt-ins, both off by default. A buyer enables it from the profile
+page; the position is stored only for opted-in users, expires after seven days and is deleted when the
+option is turned off. A seller chooses per listing whether it appears in nearby searches; the stored
+point is displaced by a deterministic 80--220\,m offset and summarised by a five-character
+geohash~\cite{geohash}. Nearby search is computed in the API with a bounding box followed by the haversine
+distance~\cite{sinnott}, so it works on any MongoDB deployment and combines with every other filter; the
+radius is limited to 0.5--50\,km. Distances are rounded to values such as \emph{about 1.2\,km away}, and
+coordinates are removed from every public serializer. A meeting point entered for a loan is returned only
+after both the borrower and the lender have agreed to it.
 
 \section{Trust Score and Moderation}
-The trust score is computed with the weighted formula of Equation~\eqref{eq:trust} and
-clamped to the range 0--100:
-\begin{equation}
-T = 10 + 20V + 25R + 20C + 15O + 10A - 40F
-\label{eq:trust}
-\end{equation}
-where every component lies between 0 and 1: $V$ is e-mail verification; $R$ is the average
-review rating, shrunk towards a neutral 0.5 while a user has fewer than five reviews; $C =
-1 - e^{-n/5}$ for $n$ completed transactions; $O$ is the share of loans returned on time
-(neutral 0.5 without loan history); $A$ is the account age capped at 180 days; and $F$ is the
-negative-report component, in which a confirmed report weighs 1.0, an administrator-upheld
-high-risk flag 0.5 and an open, unverified complaint only 0.15. A newly verified student
-therefore starts at about 50 (limited history), and an established, well-reviewed student
-reaches 80 or more. The score is shown as a star rating (score divided by 20) and, on the
-user's own profile, as a breakdown of every component. Each change is written to an
-append-only audit log with its reason. Trust is kept separate from the fraud-risk score: trust
-summarises a user's history, while fraud risk describes a single listing or activity.
-
-\section{Reports, Alerts and Administration}
-Students can report a listing, a user, or a chat message that they received. An open report
-nudges the accused student's trust score slightly; three open reports from different students
-hide a listing automatically until it is reviewed. Watchers of a listing receive an in-app
-notification when its price falls below the price they last saw; each watcher may require a
-minimum drop in percent or in rupees, and successive small drops add up.
-
-The administrator console brings the moderation work together: the fraud queue with the risk
-score, reasons and signals of each flagged listing; the report queue, where a report is
-confirmed (optionally removing the listing) or dismissed (restoring an automatically hidden
-listing); user search with suspension, which blocks the account at once and hides its
-listings until the account is restored; analytics of users, listings by status, category and
-risk level, transactions, overdue loans and payments; institution settings for categories and
-banned words, which are enforced on listings and chat messages; the metrics of the fraud
-model; and the audit log. Every administrator action records who performed it and why.
+A trust score between 0 and 100 is recomputed from a base of 40: verification adds 15 points, and
+completed transactions, the average review rating, on-time returns and account age add bounded amounts,
+while overdue loans, upheld moderation cases and confirmed reports subtract bounded amounts. The score is
+shown to other users as a star rating (score divided by 20). The administrator page lists the moderation
+queue with the listing, the seller and the reason. Approving a held listing makes it active, rejecting it
+removes it; both decisions update the moderation record and notify the seller. Owners cannot lift a
+moderation hold or a payment reservation themselves.
 
 \section{ML Service}
-The service exposes \texttt{POST /ai/price-predict}, \texttt{POST /ai/fraud-score}, the
-combined endpoint \texttt{POST /ai/assess-listing}, and model-information endpoints used by
-the administrator console. Training is reproducible with fixed random seeds and a single
-command. The price generator writes 6{,}000 synthetic listings with realistic depreciation
-curves and noise; the trainer holds out 20\% for testing, uses a further 20\% of the training
-part for conformal calibration, fits three quantile models (300 iterations, learning rate
-0.06, maximum depth 6), and also trains a Linear Regression and a Random Forest on the same
-split for comparison. The fraud generator simulates 12{,}000 marketplace events: about 95\%
-come from honest students, including two difficult but legitimate groups (large genuine
-bargains and graduating students posting many items in one hour), and about 5\% follow six
-scam patterns (price bait, spam duplication, multiple accounts, repeat offenders, stolen
-photos and messaging spikes). The fraud labels are never shown to the Isolation Forest; they
-are used only for evaluation. Real sales and administrator decisions can be exported and
-mixed in at retraining, and the service retrains itself at start-up if a model file is
-missing or incompatible.
+The service exposes \code{POST /ai/price-predict}, \code{GET /ai/model-info} and \code{GET /health}, which
+reports whether the model is loaded and the stored evaluation metrics. Training is reproducible: a generator
+synthesises 6{,}000 listings across the thirteen item classes, each with its own exponential depreciation
+curve towards a floor value, condition, brand and demand multipliers, log-normal noise and about 20\,\%
+lend listings. The training script splits the rows 80/20 with a fixed seed, stratified by listing type,
+carves a calibration split out of the training part, fits the three quantile models (300 iterations,
+learning rate 0.06, maximum depth 6, minimum leaf size 20, L2 regularisation 1.0), evaluates them on the
+test split against a naive baseline, and finally refits on all rows for serving. Real, verified campus
+sales exported by \code{npm run export-training} are mixed in with five times the weight of synthetic rows.
+If the model file is missing or was saved by an incompatible scikit-learn version, the service retrains
+itself at start-up.
 
 \section{Testing and Results}
-
 \subsection{Automated and manual testing}
-The API has an automated suite of 50 tests written with the Node test runner
-(\texttt{npm run test:api}), and the ML service has 17 model tests written with Python's
-unittest (\texttt{npm run test:ml}). Table~\ref{tab:tests} lists the behaviours they cover.
-In addition, the repository contains a thirteen-step manual checklist that walks through
-registration, browsing, selling with an AI price range, nearby discovery, a full
-borrow-and-return, a purchase with an invalid signature, a held and a medium-risk listing,
-price-drop alerts, reports, suspension, and the unauthorized-access cases.
+The API has an automated suite of 33 tests written with the Node test runner (\code{npm run test:api}),
+and the ML service has 8 model sanity tests (\code{npm run test:ml}). Table~\ref{tab:tests} lists the
+behaviours they cover. External providers are replaced by stubs where needed, for example a stubbed
+Cloudinary SDK and signed webhook payloads. In addition, the repository contains a nine-step manual
+checklist that walks through registration, browsing, selling with an AI price range and photos, nearby
+discovery, a full borrow-and-return, a purchase with an invalid signature, administrator review, and the
+unauthorized-access cases.
 
-\begin{table}[htbp]
-\centering\small
-\caption{Behaviours verified by the automated API and model tests.}
-\label{tab:tests}
-\begin{tabularx}{\textwidth}{@{}lX@{}}
+\begin{table}[h]
+\centering
+\caption{Behaviours verified by the automated tests.}\label{tab:tests}
+\small
+\begin{tabularx}{\textwidth}{@{}L{2.0cm}X@{}}
 \toprule
 \textbf{Area} & \textbf{Behaviour verified}\\
 \midrule
 Health & Service reports database state and payment mode.\\
-Identity & Non-college e-mail rejected; Gmail password sign-up redirected to Google; missing Google token rejected; OAuth start needs credentials.\\
+Identity & Non-college e-mail rejected; Gmail password sign-up redirected to Google; missing Google token
+rejected; OAuth start needs credentials.\\
 OTP & Register, verify and log in; expired OTP is refused.\\
 Listings & Create, read, update, delete and search as a verified student; only the owner may modify a listing.\\
-Location & Opt-in nearby search; exact coordinates never returned.\\
+Uploads & Upload needs authentication and a real image; listings keep URLs only; removal frees storage;
+only the owner can delete an unused upload; Cloudinary path returns a resized CDN URL.\\
+Location & Opt-in for buyer and seller; blurring of 80--220\,m; radius and filters respected; coordinates
+never returned.\\
 Loans & Request, approve, return and confirm a borrow.\\
-Payments & Order creation, verification, and rejection of an invalid signature.\\
-AI & Price and fraud endpoints do not crash the API, also when the ML service is unavailable (rule-based fallback).\\
-Fraud engine & Low risk publishes, medium risk requires the e-mailed code, high risk is held; only administrators decide; reused photos and linked accounts are detected; internal features are never exposed.\\
-Reports and admin & Reports and duplicates; automatic hold after three reports; confirmation lowers trust; chat reports only by the recipient; suspension blocks login and hides listings; banned words and categories enforced; analytics and audit log are administrator-only.\\
-Alerts & Price-drop rule, percentage and rupee thresholds, and cumulative drops.\\
-Trust and privacy & Trust formula ordering (confirmed reports hurt more than open ones); breakdown and history; avatar configuration validated; location encrypted at rest.\\
-Models & Price band contains the recommendation; older is cheaper; better condition costs more; model beats the naive baseline; a normal listing and a cheap bargain from a trusted seller are low risk; a price-bait scam is held with explanations; more red flags never lower risk.\\
+Payments & Amount taken from the listing; own item cannot be bought; reservation held and released on
+failure, cancellation or expiry; success marks sold and notifies both sides; invalid signature rejected.\\
+Webhooks, refunds & Bad webhook signature rejected; captured event finalises the payment; late payment for
+a resold item refunded; only administrators can refund.\\
+AI pricing & Model answer passed through unchanged; formula fallback used and labelled when the service is
+down; band stored on the listing; comparables shown only with enough similar listings.\\
+Trust & Trust-score endpoint returns a bounded score.\\
+Price model & Band contains the suggestion; never above the original price; older is cheaper; better condition
+is pricier; a phone depreciates faster than a textbook; rent is a fraction of the sale price; tiny MRP falls
+back to a typical price; model beats the naive baseline.\\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 \subsection{Model performance}
-Table~\ref{tab:model} reports the metrics written by the price training script on the
-held-out test split ($n_{\text{train}}=4800$, $n_{\text{test}}=1200$): mean absolute error
-(MAE), mean absolute percentage error (MAPE), root mean squared error (RMSE) and coefficient
-of determination ($R^2$), for the three candidate algorithms and a naive baseline that
-multiplies the original price by an average factor per condition. The 80\% fair band covers
-79\% of the true test prices.
+Table~\ref{tab:metrics} reports the metrics written by the training script to
+\code{price\_metrics.json}. The mean absolute error (MAE), mean absolute percentage error (MAPE) and
+coefficient of determination ($R^2$) are computed on the held-out test split of the synthetic data set
+for the median model and for a naive baseline that multiplies the original price by the average training
+ratio for the same condition and listing type.
 
-\begin{table}[htbp]
-\centering\small
-\caption{Price models on the held-out test split.}
-\label{tab:model}
-\begin{tabular}{@{}lcccc@{}}
+\begin{table}[h]
+\centering
+\caption{Quantile price model: test metrics ($n_{\text{train}} = 4800$, $n_{\text{test}} = 1200$).}\label{tab:metrics}
+\small
+\begin{tabular}{@{}lrrr@{}}
 \toprule
-\textbf{Model} & \textbf{MAE (Rs.)} & \textbf{MAPE (\%)} & \textbf{RMSE (Rs.)} & $\boldsymbol{R^2}$\\
+\textbf{Model and subset} & \textbf{MAE (Rs.)} & \textbf{MAPE (\%)} & $\boldsymbol{R^2}$\\
 \midrule
-Naive condition baseline & 818.61 & 43.92 & 1874.90 & 0.937\\
-Linear Regression & 513.44 & 17.21 & 1282.99 & 0.971\\
-Random Forest & 333.25 & 8.97 & 879.48 & 0.986\\
-Gradient boosting, q50 (served) & 333.99 & 8.71 & 883.63 & 0.986\\
+Quantile GBM (median), all test rows & 331.13 & 8.67 & 0.987\\
+Quantile GBM (median), sale listings only & 401.94 & 8.49 & --\\
+Naive condition--type baseline & 818.61 & 43.92 & 0.937\\
+\midrule
+\multicolumn{4}{@{}l}{Coverage of the calibrated 80\,\% fair band on the test rows: 76.7\,\%}\\
 \bottomrule
 \end{tabular}
 \end{table}
-
-Table~\ref{tab:fraudmodel} reports the fraud model on 3{,}600 held-out simulated events, of
-which about 5\% are injected scams. A simple rule baseline that flags any listing with at least
-one red flag is shown for comparison.
-
-\begin{table}[htbp]
-\centering\small
-\caption{Fraud model on the held-out simulated events.}
-\label{tab:fraudmodel}
-\begin{tabular}{@{}lccc@{}}
-\toprule
-\textbf{Measure} & \textbf{Medium or high} & \textbf{High only} & \textbf{Rule baseline}\\
-\midrule
-Precision & 0.845 & 1.000 & 0.420\\
-Recall & 0.921 & 0.483 & 1.000\\
-False alarms on honest students & 0.9\% & 0.0\% & 7.2\%\\
-Share of all listings affected & 5.4\% & 2.4\% & --\\
-\midrule
-\multicolumn{4}{@{}l}{ROC-AUC 0.997; average precision 0.960}\\
-\bottomrule
-\end{tabular}
-\end{table}
-
-By scam pattern, every case of price bait, spam duplication and repeat offending reaches at least
-medium risk, and 96\% of price-bait listings are held. Multiple-account and messaging-spike
-cases reach medium or high in 93\% and 88\% of cases, and stolen photos in 72\%. Among honest
-groups, only 2.3\% of large genuine bargains and 11\% of graduating students posting many
-items are asked for the extra verification, and none of them is held.
 
 \subsection{Analysis}
-The earlier version of the price model, a Random Forest on seven features trained on only 280
-rows, reached a test $R^2$ of 0.623 with a validation $R^2$ of 0.953, a gap caused by the tiny
-splits and the wide price range. Moving to a scale-free target, a larger data set and richer
-features removed this problem. Random Forest and gradient boosting are now equally accurate;
-gradient boosting is served because it supports monotone constraints and the quantile loss
-that produces the fair band directly, and both clearly outperform linear regression and the
-naive baseline. For fraud, the model detects far more scams than it costs honest students:
-at the medium threshold it misses about 8\% of scams while bothering fewer than 1\% of honest
-students, whereas the rule baseline catches every scam only by bothering 7\% of honest
-students. Most importantly, both data sets are synthetic, so these numbers show that the
-pipelines learn the simulated patterns and report honestly; they do not measure real campus
-prices or real fraud.
+The model reduces the percentage error to about one fifth of the baseline's and the absolute error to
+less than half. Both $R^2$ values are high because the original price alone explains most of the variance
+in rupee terms; this is why MAPE, which weighs a Rs.~900 calculator and a Rs.~40{,}000 laptop equally, is
+the more informative measure here. The calibrated band covers 76.7\,\% of the test prices, slightly below
+its 80\,\% target, which is acceptable for a guide but shows that the band should not be read as a
+guarantee. Re-running the training script in a different environment reproduced these figures closely
+(MAPE 8.71\,\%, coverage 79.0\,\%), and all eight model tests passed. Most importantly, the data are
+synthetic, so these numbers show that the pipeline learns the encoded depreciation behaviour, serializes,
+serves and reports honestly; they do not measure real campus prices.
 
 \section{Challenges and Resolutions}
-Table~\ref{tab:challenges} lists the main problems met during development, in the order in
-which they appeared, and how each was resolved.
-
-\begin{table}[htbp]
-\centering\small
-\caption{Main problems met during development and how they were resolved.}
-\label{tab:challenges}
-\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{5cm}X@{}}
+\begin{table}[h]
+\centering
+\caption{Main problems met during development and how they were resolved.}\label{tab:challenges}
+\small
+\begin{tabularx}{\textwidth}{@{}L{5.2cm}X@{}}
 \toprule
 \textbf{Problem} & \textbf{Resolution}\\
 \midrule
-The app was a frontend over mock data with no persistence. & Added the Express and Mongoose server, the data models and REST routes, and connected every page through \texttt{src/api.js}.\\
-MongoDB was not installed on the development machine. & Added an automatic fallback to an in-memory MongoDB server; the real connection string is a one-line configuration change.\\
-Icon components cannot be stored in the database. & Stored an \texttt{iconKey} string and re-hydrated it to a component in the client.\\
-Cross-origin errors between the Vite and Express ports. & Enabled CORS on the API and proxied \texttt{/api} through Vite.\\
-An empty database made the interface look broken. & Wrote a seed script and seed automatically when the collections are empty.\\
-Publishing and chat only changed React state or showed a toast. & Persisted listings, messages and transactions through POST endpoints and loaded them back on each page.\\
-Prices and fraud signals needed intelligence beyond fixed rules. & Added the FastAPI service with two trained models and a graceful fallback when it is offline.\\
-The first price model generalised poorly ($R^2=0.623$ on 42 test rows). & Switched to a scale-free target, 6{,}000 training rows, richer features and gradient-boosted quantile regression with monotone constraints and conformal calibration.\\
-The first fraud model was a placeholder trained on 400 random points, without evaluation. & Built a marketplace simulator with six scam patterns, 22 risk-oriented features, a calibrated score, explanations and a measured evaluation.\\
-A cheap calculator looked suspicious next to expensive phones in the same category. & Compared prices with the median of comparable listings (similar original price) instead of the category mean.\\
-Normal listings from new students were sent to review. & Matched the simulated trust of new accounts to the real trust formula and tightened the alert budget; false alarms fell below 1\%.\\
-Photos stored as base64 made listings huge. & Uploaded photos to Cloudinary with type and size checks, stored only URLs, and cleaned up orphan files.\\
-Two students could pay for one item. & Added 15-minute reservations, signed idempotent webhooks and automatic refunds of late payments.\\
+The app was a frontend over mock data with no persistence. & Added the Express and Mongoose server, the data
+models and REST routes, and connected every page through \code{src/api.js}.\\
+MongoDB was not installed on the development machine. & Added an automatic fallback to an in-memory MongoDB
+server; the real connection string is a one-line configuration change.\\
+Icon components cannot be stored in the database. & Stored an \code{iconKey} string and re-hydrated it to a
+component in the client.\\
+Cross-origin errors between the Vite and Express ports. & Enabled CORS on the API and proxied \code{/api}
+through Vite.\\
+An empty database made the interface look broken. & Wrote a seed script and seed automatically when the
+collections are empty.\\
+The first price model, trained on raw prices, generalised poorly and was hidden by a fixed blend with the
+formula. & Predicted the price-to-MRP ratio with monotone quantile models and calibrated bands; passed the
+model output through and kept the formula only as a fallback.\\
+Sellers typed the rent or a typo into the original-price field. & Recognised the item class and substituted
+a typical campus MRP, with lower confidence and a visible note.\\
+Photos stored inline in listings bloated the database. & Uploaded photos to Cloudinary with type and size checks,
+stored only URLs, and migrated old listings.\\
+Two buyers could pay for the same item, and a closed tab could lose a payment. & Added atomic reservations,
+signed webhooks, idempotent finalisation and automatic refunds.\\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-% ---------------- Chapter 5 ----------------
-\chapter{Conclusion}
+% =====================================================================
+\chapter{Conclusion}\label{ch:conclusion}
 
 \section{Summary of Work}
-Campus Marketplace was designed and implemented as a three-tier system: a React interface, an
-Express and MongoDB API, and a FastAPI machine-learning service. All six objectives of
-Section~1.2 were addressed. Access is limited to verified college identities; the platform
-supports buying, borrowing, selling and lending with a complete loan life cycle; sellers
-receive an explainable price range; new listings are screened for fraud, with extra
-verification for medium risk and administrator review for high risk, and students can report
-listings, users and messages; users carry an explainable, audited trust score while exact
-locations stay private and encrypted; and the three tiers are independently runnable and
-covered by automated API and model test suites.
+Campus Marketplace was designed and implemented as a three-tier system: a React interface,
+an Express and MongoDB API, and a FastAPI machine-learning service. All six objectives of
+Section~1.2 were addressed. Access is limited to verified college identities; the platform supports
+buying, borrowing, selling and lending with a complete loan life cycle; sellers receive an explainable,
+calibrated price band with a labelled fallback; checkout is priced on the server, reserved, verified
+and refundable; users carry a trust score while exact locations stay private and photos are validated
+and stored in the cloud; and the three tiers are independently runnable and covered by automated API
+and model test suites.
 
 \section{Key Findings}
 \begin{itemize}
-\item \textbf{Iterative delivery reduced risk.} Building the interface first on mock data and
-then adding backend, identity, marketplace logic and ML in separate increments kept each step
-testable and made integration problems visible early.
-\item \textbf{Graceful degradation matters.} Falling back to an in-memory database and
-continuing to accept listings when the ML service is offline kept the system demonstrable
-under imperfect conditions.
-\item \textbf{Modelling choices matter more than the algorithm.} A scale-free target,
-monotone constraints and quantile loss raised the price model from a test $R^2$ of 0.623 to
-0.986 and gave a calibrated fair band, while Random Forest and gradient boosting performed
-almost identically.
-\item \textbf{Fraud detection is a trade-off between catching scams and bothering honest
-users.} One-sided features, a calibrated alert budget and a graded response (verify before
-hold) let the model catch about 92\% of simulated scams while affecting fewer than 1\% of
-honest students.
-\item \textbf{Honest evaluation is necessary.} Both models are evaluated on synthetic data,
-so their results show that the pipelines work and must not be read as real-world accuracy.
+  \item \textbf{Iterative delivery reduced risk.} Building the interface first on mock data and then adding
+        backend, identity, marketplace logic, ML and hardening in separate increments kept each step
+        testable and made integration problems visible early.
+  \item \textbf{Graceful degradation matters.} Falling back to an in-memory database, to local photo storage
+        and to a labelled formula when the ML service is offline kept the system demonstrable under
+        imperfect conditions.
+  \item \textbf{Choosing the right target matters more than the algorithm.} Predicting a scale-free
+        price-to-MRP ratio with monotone constraints reduced the test MAPE to 8.67\,\% against 43.92\,\% for
+        a naive baseline, and the constraints keep the output sensible where data are thin.
+  \item \textbf{The server must own every amount and state change.} Reading prices from the database,
+        reserving items atomically and finalising payments exactly once removed whole classes of errors.
+  \item \textbf{Honest evaluation is necessary.} Results on synthetic data, and a band coverage slightly below
+        its target, must not be over-interpreted as real market accuracy.
 \end{itemize}
 
 \section{Limitations}
-The models are trained on synthetic seed data rather than real campus trades, and the
-supervised fraud stage waits for enough administrator decisions. Payments run in development
-mode unless Razorpay credentials are provided, and verification e-mail delivery depends on
-SMTP configuration. Messaging is request-based rather than real-time. Reused photos are
-detected only when the file is identical, not when it has been cropped or re-encoded, and
-duplicate-account detection relies on a browser identifier that a determined user can clear.
+The price model is trained on synthetic data rather than real campus trades. Payments run in development
+mode unless Razorpay credentials are provided, and the Razorpay and Cloudinary integrations have so far
+been exercised only through development mode, signed webhook payloads and stubbed SDK calls, not
+with live accounts. Verification e-mail delivery
+depends on SMTP configuration. Messaging is request-based rather than real-time, and uploaded photos are
+checked for type and size but not for content.
 
 \section{Future Work and Recommendations}
 \begin{enumerate}
-\item Collect anonymised, consented transaction data and administrator decisions (export
-scripts already exist) and retrain the price and fraud models on real behaviour, activating
-the supervised Random Forest stage.
-\item Move to live Razorpay credentials and add refunds and dispute handling.
-\item Add real-time chat and push or e-mail reminders for due dates.
-\item Deploy the three tiers with a managed MongoDB cluster, continuous integration, and
-monitoring of model drift.
-\item Add perceptual image hashing to detect edited copies of reused photos, and image-based
-moderation of listing photos.
-\item Evaluate usability with a pilot group of students and feed the results into the next
-iteration.
+  \item Collect anonymised, consented sales through the existing export path and retrain the price model
+        on real campus behaviour, monitoring band coverage as data accumulate.
+  \item Move to live Razorpay credentials and add dispute handling on top of the existing refunds.
+  \item Add real-time chat and push or e-mail reminders for due dates.
+  \item Deploy the three tiers with a managed MongoDB cluster, continuous integration, and monitoring of
+        model drift.
+  \item Add automated checks on photo content and richer moderation tools in the administrator interface.
+  \item Evaluate usability with a pilot group of students and feed the results into the next iteration.
 \end{enumerate}
 
 \section{Final Remarks}
-The project shows that a small team can combine established web engineering practice with
-lightweight machine learning to serve a concrete community need. Beyond the working system,
-it gave practical experience in requirements analysis, UML modelling, REST design,
-security-conscious authentication, payment verification, privacy by design and the honest
-reporting of model performance.
+The project shows that a small team can combine established web engineering practice with lightweight
+machine learning to serve a concrete community need. Beyond the working system, it gave practical
+experience in requirements analysis, UML modelling~\cite{uml,sommerville}, REST design, security-conscious
+authentication, payment verification, privacy by design and the honest reporting of model performance.
 
-% ================= BIBLIOGRAPHY =================
-\clearpage
-\addcontentsline{toc}{chapter}{Bibliography}
-\nocite{uml,sommerville,fielding}
+% =====================================================================
 \begin{thebibliography}{99}
-\bibitem{breiman} L. Breiman. Random forests. \emph{Machine Learning}, 45(1):5--32, 2001.
-\bibitem{friedman} J. H. Friedman. Greedy function approximation: a gradient boosting machine. \emph{Annals of Statistics}, 29(5):1189--1232, 2001.
-\bibitem{romano} Y. Romano, E. Patterson, and E. Cand\`es. Conformalized quantile regression. In \emph{Advances in Neural Information Processing Systems (NeurIPS)}, 32, 2019.
-\bibitem{liu} F. T. Liu, K. M. Ting, and Z.-H. Zhou. Isolation forest. In \emph{Proc. IEEE International Conference on Data Mining (ICDM)}, pages 413--422, 2008.
-\bibitem{sklearn} F. Pedregosa et al. Scikit-learn: Machine learning in Python. \emph{Journal of Machine Learning Research}, 12:2825--2830, 2011.
-\bibitem{larman} C. Larman and V. R. Basili. Iterative and incremental developments: a brief history. \emph{IEEE Computer}, 36(6):47--56, 2003.
+\addcontentsline{toc}{chapter}{Bibliography}
+\bibitem{friedman} J.~H. Friedman. Greedy function approximation: a gradient boosting machine.
+  \emph{Annals of Statistics}, 29(5):1189--1232, 2001.
+\bibitem{koenker} R.~Koenker and G.~Bassett. Regression quantiles. \emph{Econometrica}, 46(1):33--50, 1978.
+\bibitem{sklearn} F.~Pedregosa et~al. Scikit-learn: Machine learning in Python. \emph{Journal of Machine Learning
+  Research}, 12:2825--2830, 2011.
+\bibitem{larman} C.~Larman and V.~R. Basili. Iterative and incremental developments: a brief history.
+  \emph{IEEE Computer}, 36(6):47--56, 2003.
 \bibitem{uml} Object Management Group. \emph{Unified Modeling Language (UML), Version 2.5.1}. OMG, 2017.
-\bibitem{sommerville} I. Sommerville. \emph{Software Engineering}, 10th edition. Pearson, 2016.
-\bibitem{fielding} R. T. Fielding. \emph{Architectural Styles and the Design of Network-based Software Architectures}. PhD thesis, University of California, Irvine, 2000.
-\bibitem{jwt} M. Jones, J. Bradley, and N. Sakimura. JSON Web Token (JWT). RFC 7519, IETF, 2015.
-\bibitem{oauth} D. Hardt (ed.). The OAuth 2.0 Authorization Framework. RFC 6749, IETF, 2012.
-\bibitem{hmac} H. Krawczyk, M. Bellare, and R. Canetti. HMAC: Keyed-hashing for message authentication. RFC 2104, IETF, 1997.
-\bibitem{sinnott} R. W. Sinnott. Virtues of the haversine. \emph{Sky and Telescope}, 68(2):159, 1984.
-\bibitem{react} Meta Open Source. React Documentation. \url{https://react.dev}.
-\bibitem{express} OpenJS Foundation. Express -- Node.js web application framework. \url{https://expressjs.com}.
-\bibitem{mongo} MongoDB, Inc. MongoDB Documentation. \url{https://www.mongodb.com/docs}.
-\bibitem{fastapi} S. Ram\'irez. FastAPI Documentation. \url{https://fastapi.tiangolo.com}.
+\bibitem{sommerville} I.~Sommerville. \emph{Software Engineering}, 10th edition. Pearson, 2016.
+\bibitem{fielding} R.~T. Fielding. \emph{Architectural Styles and the Design of Network-based Software
+  Architectures}. PhD thesis, University of California, Irvine, 2000.
+\bibitem{jwt} M.~Jones, J.~Bradley, and N.~Sakimura. JSON Web Token (JWT). RFC 7519, IETF, 2015.
+\bibitem{oauth} D.~Hardt (ed.). The OAuth 2.0 Authorization Framework. RFC 6749, IETF, 2012.
+\bibitem{hmac} H.~Krawczyk, M.~Bellare, and R.~Canetti. HMAC: Keyed-hashing for message authentication.
+  RFC 2104, IETF, 1997.
+\bibitem{sinnott} R.~W. Sinnott. Virtues of the haversine. \emph{Sky and Telescope}, 68(2):159, 1984.
+\bibitem{react} Meta Open Source. \emph{React Documentation}. \url{https://react.dev}.
+\bibitem{express} OpenJS Foundation. \emph{Express -- Node.js web application framework}. \url{https://expressjs.com}.
+\bibitem{mongodb} MongoDB, Inc. \emph{MongoDB Documentation}. \url{https://www.mongodb.com/docs}.
+\bibitem{fastapi} S.~Ram\'irez. \emph{FastAPI Documentation}. \url{https://fastapi.tiangolo.com}.
+\bibitem{lightgbm} G.~Ke, Q.~Meng, T.~Finley, T.~Wang, W.~Chen, W.~Ma, Q.~Ye, and T.-Y. Liu. LightGBM: A highly
+  efficient gradient boosting decision tree. In \emph{Advances in Neural Information Processing Systems 30},
+  pages 3146--3154, 2017.
+\bibitem{romano} Y.~Romano, E.~Patterson, and E.~J. Cand\`es. Conformalized quantile regression. In
+  \emph{Advances in Neural Information Processing Systems 32}, pages 3543--3553, 2019.
+\bibitem{cloudinary} Cloudinary Ltd. \emph{Cloudinary Documentation}. \url{https://cloudinary.com/documentation}.
+\bibitem{geohash} G.~Niemeyer. Geohash. \url{http://geohash.org}, 2008.
 \end{thebibliography}
 
 \end{document}
