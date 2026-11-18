@@ -3,6 +3,14 @@ import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../auth'
 import { api } from '../api'
 
+function otpMessage(res, email) {
+  if (res.deliveryMode === 'smtp') {
+    return `OTP sent to ${email}. Check your inbox (and spam).` + (res.devOtp ? ` Demo code: ${res.devOtp}` : '')
+  }
+  if (res.devOtp) return `E-mail could not be sent right now — use this demo code: ${res.devOtp}`
+  return 'OTP sent to your college email.'
+}
+
 export default function AuthPage() {
   const { loginWithToken } = useAuth()
   const [searchParams] = useSearchParams()
@@ -38,7 +46,7 @@ export default function AuthPage() {
       setMode('verify')
       setVerificationStatus(res.verificationStatus || 'pending')
       setDevOtp(res.devOtp || '')
-      setInfo(res.devOtp ? `Demo OTP (DEV_RETURN_OTP): ${res.devOtp}` : 'OTP sent to your college email.')
+      setInfo(otpMessage(res, email))
     } catch (err) {
       setError(err.message)
     } finally {
@@ -88,7 +96,7 @@ export default function AuthPage() {
     try {
       const res = await api.resendOtp({ email: pendingEmail || email })
       setDevOtp(res.devOtp || '')
-      setInfo(res.devOtp ? `New demo OTP: ${res.devOtp}` : 'A new OTP was sent.')
+      setInfo(otpMessage(res, pendingEmail || email))
     } catch (err) {
       setError(err.message)
     } finally {

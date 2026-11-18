@@ -217,7 +217,9 @@ router.post('/create-order', requireAuth, requireVerified, async (req, res) => {
       })
     } catch (err) {
       await releaseListing(listing._id, { buyerId: req.user._id })
-      return res.status(502).json({ error: `Payment provider error: ${err.error?.description || err.message}` })
+      const detail = err?.error?.description || err?.message || (err?.statusCode === 401 ? 'invalid Razorpay keys' : 'could not reach Razorpay')
+      console.warn('[payments] Razorpay order failed:', detail, err?.statusCode || '')
+      return res.status(502).json({ error: `Payment provider error: ${detail}. Check RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET and your internet connection.` })
     }
 
     const payment = await Payment.create({

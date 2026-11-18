@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import VerifyListing from '../components/VerifyListing'
 import { ShieldCheck, ArrowLeft, PartyPopper } from 'lucide-react'
 import ImageUploader from '../components/ImageUploader'
 import CategoryDropdown from '../components/CategoryDropdown'
 import PriceInsight from '../components/PriceInsight'
 import WashiTape from '../components/WashiTape'
-import { useCategories } from '../hooks/useCategories'
+import { categories } from '../data/mockData'
 import { api } from '../api'
 import { campusFairPrice, rupee, sanitizePredictedPrice } from '../utils/fairPrice'
 import { getBrowserPosition } from '../utils/geo'
@@ -18,7 +17,6 @@ const fieldClass = (bad) =>
   }`
 
 export default function SellLend({ onPublish }) {
-  const [result, setResult] = useState(null)
   const [step, setStep] = useState('form')
   const [images, setImages] = useState([])
   const [title, setTitle] = useState('')
@@ -42,7 +40,6 @@ export default function SellLend({ onPublish }) {
   const [priceTouched, setPriceTouched] = useState(false)
   const formTopRef = useRef(null)
 
-  const categories = useCategories()
   const catObj = categories.find((c) => c.id === category)
   const estimatePayload = {
     category,
@@ -156,7 +153,6 @@ export default function SellLend({ onPublish }) {
         ...(point || {}),
       })
       if (created.locationNote) setNotice(created.locationNote)
-      setResult(created)
       setStep('success')
       onPublish?.(created)
     } catch (err) {
@@ -179,26 +175,8 @@ export default function SellLend({ onPublish }) {
         <div className="w-20 h-20 rounded-full bg-moss-bg border-[1.5px] border-moss-ink/40 flex items-center justify-center mx-auto mb-5">
           <PartyPopper size={32} className="text-moss-ink" />
         </div>
-        <h2 className="font-display font-bold text-xl mb-2">
-          {result?.status === 'verification' ? 'Almost there' : result?.status === 'held' ? 'Listing submitted for review' : 'Listing published'}
-        </h2>
-        <p className="text-sm text-ink-soft mb-3">
-          {result?.status === 'held'
-            ? 'Our fraud screening flagged a few unusual signals, so an admin will check this listing before it goes live. You will get a notification.'
-            : result?.status === 'verification'
-              ? 'One extra step before buyers can see it.'
-              : 'Buyers on campus can see it now.'}
-        </p>
-        {result?.status === 'verification' && (
-          <div className="mb-4">
-            <VerifyListing listingId={result.id} devOtp={result.devOtp} onVerified={(l) => setResult(l)} />
-          </div>
-        )}
-        {result?.fraudRiskLevel && (
-          <p className="text-[11px] font-mono text-ink-soft mb-3">
-            AI fraud screening: {result.fraudRiskLevel} risk ({result.fraudRiskScore}) · AI fair price ₹{result.fairMin}–₹{result.fairMax}
-          </p>
-        )}
+        <h2 className="font-display font-bold text-xl mb-2">Listing submitted</h2>
+        <p className="text-sm text-ink-soft mb-3">Your listing is saved. High-risk listings are held for admin review instead of going live automatically.</p>
         {notice && <p className="text-xs text-yellow-ink bg-yellow-bg border border-yellow-ink/30 rounded-md p-2 mb-4">{notice}</p>}
         <button onClick={reset} className="bg-ink text-paper rounded-full px-5 py-2.5 text-sm font-medium">List another item</button>
       </div>

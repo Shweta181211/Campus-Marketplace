@@ -30,12 +30,6 @@ export async function requireAuth(req, res, next) {
     const payload = jwt.verify(token, process.env.JWT_SECRET || 'dev-jwt-secret-change-me')
     const user = await User.findById(payload.sub)
     if (!user) return res.status(401).json({ error: 'Unauthorized' })
-    if (user.suspended) {
-      return res.status(403).json({
-        error: `Your account is suspended${user.suspendedReason ? `: ${user.suspendedReason}` : ''}. Contact the campus marketplace admin.`,
-        suspended: true,
-      })
-    }
     req.user = user
     req.auth = payload
     next()

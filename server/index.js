@@ -1,4 +1,6 @@
 import 'dotenv/config'
+import { paymentMode } from './utils/payments.js'
+import { checkEmailSetup } from './utils/email.js'
 import express from 'express'
 import cors from 'cors'
 import mongoose from 'mongoose'
@@ -18,8 +20,6 @@ import watchlistRouter from './routes/watchlist.js'
 import notificationsRouter from './routes/notifications.js'
 import paymentsRouter, { razorpayWebhook } from './routes/payments.js'
 import uploadsRouter from './routes/uploads.js'
-import reportsRouter from './routes/reports.js'
-import { enabledCategories } from './utils/settings.js'
 import { storageProvider, LOCAL_UPLOAD_DIR } from './utils/storage.js'
 import { cleanupOrphanUploads } from './utils/uploads.js'
 import { releaseExpiredReservations } from './utils/reservations.js'
@@ -52,19 +52,23 @@ app.get('/api/health', (_req, res) => {
     ok: true,
     service: 'campus-marketplace-api',
     mongoState: MONGO_STATES[mongoose.connection.readyState] || 'unknown',
-    paymentMode: process.env.RAZORPAY_KEY_ID && process.env.PAYMENT_MODE !== 'dev' ? 'razorpay' : 'dev',
+    paymentMode: paymentMode(),
     storage: storageProvider(),
     mlServiceUrl: process.env.ML_SERVICE_URL || 'http://127.0.0.1:8000',
   })
 })
 
-// categories are managed by admins (Admin console -> Settings); disabled ones are hidden from sellers
-app.get('/api/categories', async (_req, res) => {
-  try {
-    res.json((await enabledCategories()).map(({ id, label, tape }) => ({ id, label, tape })))
-  } catch (err) {
-    res.status(500).json({ error: err.message })
-  }
+app.get('/api/categories', (_req, res) => {
+  res.json([
+    { id: 'books', label: 'Books', tape: 'yellow' },
+    { id: 'cycles', label: 'Cycles', tape: 'sky' },
+    { id: 'electronics', label: 'Electronics', tape: 'coral' },
+    { id: 'lab', label: 'Lab equipment', tape: 'moss' },
+    { id: 'furniture', label: 'Furniture', tape: 'yellow' },
+    { id: 'hostel', label: 'Hostel essentials', tape: 'sky' },
+    { id: 'notes', label: 'Notes', tape: 'coral' },
+    { id: 'other', label: 'Other', tape: 'moss' },
+  ])
 })
 
 app.use('/api/auth', authRouter)
@@ -81,7 +85,6 @@ app.use('/api/watchlist', watchlistRouter)
 app.use('/api/notifications', notificationsRouter)
 app.use('/api/payments', paymentsRouter)
 app.use('/api/uploads', uploadsRouter)
-app.use('/api/reports', reportsRouter)
 
 app.use((err, _req, res, _next) => {
   if (err?.type === 'entity.too.large') return res.status(413).json({ error: 'Request body too large' })
@@ -115,6 +118,14 @@ async function start() {
     console.log(`API running on http://localhost:${PORT}`)
     console.log(`DB mode: ${connection.mode}`)
     console.log(`Image storage: ${storageProvider()}`)
+    const mode = paymentMode()
+    const key = String(process.env.RAZORPAY_KEY_ID || '')
+    console.log(
+      mode === 'razorpay'
+        ? `Payments: Razorpay ${key.startsWith('rzp_live_') ? 'LIVE (real money!)' : 'test mode'}`
+        : `Payments: development mode (${!key ? 'RAZORPAY_KEY_ID missing' : 'PAYMENT_MODE=dev'})`
+    )
+    checkEmailSetup().catch(() => {})
   })
 }
 

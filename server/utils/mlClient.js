@@ -26,18 +26,6 @@ export async function predictPrice(payload) {
   return postJson('/ai/price-predict', payload)
 }
 
-export async function fraudModelInfo() {
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), 4000)
-  try {
-    const res = await fetch(`${ML_URL()}/ai/fraud-model-info`, { signal: controller.signal })
-    if (!res.ok) throw new Error(`ML service error (${res.status})`)
-    return await res.json()
-  } finally {
-    clearTimeout(timer)
-  }
-}
-
 export async function scoreFraud(payload) {
   return postJson('/ai/fraud-score', payload)
 }

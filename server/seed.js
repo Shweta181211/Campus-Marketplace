@@ -11,9 +11,6 @@ import Notification from './models/Notification.js'
 import Watchlist from './models/Watchlist.js'
 import Payment from './models/Payment.js'
 import FraudReport from './models/FraudReport.js'
-import AuditLog from './models/AuditLog.js'
-import Settings from './models/Settings.js'
-import { getSettings, clearSettingsCache } from './utils/settings.js'
 import { encodeGeohash } from './utils/geohash.js'
 import { hashText } from './utils/ai.js'
 
@@ -112,10 +109,7 @@ export async function seedDatabase({ clear = true } = {}) {
       Watchlist.deleteMany({}),
       Payment.deleteMany({}),
       FraudReport.deleteMany({}),
-      AuditLog.deleteMany({}),
-      Settings.deleteMany({}),
     ])
-    clearSettingsCache()
   }
 
   const passwordHash = await bcrypt.hash(process.env.SEED_PASSWORD || 'CampusDemo123!', 10)
@@ -129,7 +123,6 @@ export async function seedDatabase({ clear = true } = {}) {
     initials: 'RS',
     avatar: '🦊',
     hostel: 'Hostel C',
-    avatarConfig: { face: 'oval', skin: '#e8b98a', hair: 'long', hairColor: '#2b1d14', outfit: 'hoodie', outfitColor: '#e76f51', accessory: 'glasses', bg: '#fde68a' },
     trust: 4.7,
     trustScore: 86,
     rating: 4.8,
@@ -138,7 +131,6 @@ export async function seedDatabase({ clear = true } = {}) {
     verificationStatus: 'verified',
     listingsCount: 0,
     joined: 'August 2024',
-    createdAt: new Date('2024-08-05T10:00:00Z'), // realistic account age (feeds trust score + fraud model)
     role: 'student',
     isSeed: true,
   })
@@ -157,7 +149,6 @@ export async function seedDatabase({ clear = true } = {}) {
     verificationStatus: 'verified',
     listingsCount: 0,
     joined: 'May 2024',
-    createdAt: new Date('2024-05-01T10:00:00Z'),
     role: 'admin',
     isSeed: true,
   })
@@ -174,7 +165,6 @@ export async function seedDatabase({ clear = true } = {}) {
       passwordHash,
       initials: `${first[0]}${last[0]}`,
       avatar: AVATARS[i % AVATARS.length],
-      avatarConfig: i % 2 === 0 ? seedAvatar(i) : null,
       hostel: HOSTELS[i % HOSTELS.length],
       trust: 3.8 + (i % 12) * 0.1,
       trustScore: 50 + (i % 40),
@@ -184,7 +174,6 @@ export async function seedDatabase({ clear = true } = {}) {
       verificationStatus: 'verified',
       listingsCount: 0,
       joined: 'July 2024',
-      createdAt: new Date(Date.UTC(2024, 6, 1 + i)),
       role: 'student',
       isSeed: true,
       locationSharingEnabled: i % 3 === 0,
@@ -210,8 +199,6 @@ export async function seedDatabase({ clear = true } = {}) {
     const meta = CATEGORY_META[tpl.category]
     const desc = `${tpl.title} in ${condition.toLowerCase()} condition. Campus seed listing for ${tpl.category}. Pickup near ${seller.hostel || 'campus'}.`
     listings.push({
-      // spread seed listings over the last ~2 months so "listings in the last hour" behaviour features stay realistic
-      createdAt: new Date(Date.now() - (2 + ((n * 7) % 60)) * 86400000 - (n % 24) * 3600000),
       title: n > 24 ? `${tpl.title} #${Math.floor(n / LISTING_TEMPLATES.length) + 1}` : tpl.title,
       category: tpl.category,
       condition,
@@ -372,10 +359,6 @@ export async function seedDatabase({ clear = true } = {}) {
       isSeed: true,
     })
   }
-  // seed transactions happened in the past, not "today" (keeps the 24h transaction-spike feature honest)
-  txns.forEach((t, i) => {
-    t.createdAt = t.startDate || t.completedAt || new Date(now - (5 + i) * 86400000)
-  })
   const createdTxns = await Transaction.insertMany(txns)
 
   await Message.insertMany([
@@ -438,8 +421,8 @@ export async function seedDatabase({ clear = true } = {}) {
   ])
 
   await Watchlist.insertMany([
-    { userId: riya._id, listingId: sale[1]._id, lastObservedPrice: sale[1].price, thresholdType: 'any', isSeed: true },
-    { userId: riya._id, listingId: sale[2]._id, lastObservedPrice: sale[2].price, thresholdType: 'percent', thresholdValue: 10, isSeed: true },
+    { userId: riya._id, listingId: sale[1]._id, isSeed: true },
+    { userId: riya._id, listingId: sale[2]._id, isSeed: true },
   ])
 
   await Payment.insertMany([
@@ -463,24 +446,9 @@ export async function seedDatabase({ clear = true } = {}) {
     reporterId: riya._id,
     accusedUserId: shady._id,
     reason: 'Suspiciously low price for a new flagship phone (seed report).',
-    category: 'scam',
-    severity: 'high',
-    targetType: 'listing',
-    riskScore: held[0]?.fraudRiskScore || 0,
     status: 'open',
     isSeed: true,
   })
-  await FraudReport.create({
-    targetType: 'user',
-    reporterId: sellers[3]._id,
-    accusedUserId: shady._id,
-    reason: 'Asked me to pay a token amount on UPI before meeting (seed report).',
-    category: 'scam',
-    severity: 'high',
-    status: 'open',
-    isSeed: true,
-  })
-  await getSettings() // creates default categories + banned words
 
   return {
     users: users.length,
@@ -488,20 +456,6 @@ export async function seedDatabase({ clear = true } = {}) {
     transactions: createdTxns.length,
     demoLogin: { email: 'riya.sharma@campus.edu', password: process.env.SEED_PASSWORD || 'CampusDemo123!' },
     adminLogin: { email: 'admin@campus.edu', password: process.env.SEED_ADMIN_PASSWORD || 'CampusAdmin123!' },
-  }
-}
-
-function seedAvatar(i) {
-  const pick = (arr) => arr[i % arr.length]
-  return {
-    face: pick(['round', 'oval', 'square']),
-    skin: pick(['#f6d7b0', '#e8b98a', '#c68a5b', '#8d5a3b', '#5c3a24']),
-    hair: pick(['short', 'long', 'curly', 'bun', 'buzz', 'none']),
-    hairColor: pick(['#2b1d14', '#5a3825', '#a0522d', '#d4a017', '#9e9e9e', '#c2185b']),
-    outfit: pick(['tshirt', 'hoodie', 'shirt', 'kurta']),
-    outfitColor: pick(['#e76f51', '#2a9d8f', '#264653', '#e9c46a', '#8ab17d', '#6d597a']),
-    accessory: pick(['none', 'glasses', 'cap', 'earrings', 'headphones']),
-    bg: pick(['#fde68a', '#bae6fd', '#fecaca', '#bbf7d0', '#e9d5ff']),
   }
 }
 

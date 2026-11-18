@@ -1,4 +1,4 @@
-"""Train the price-recommendation model.  (The fraud model lives in train_fraud_model.py; train_all.py runs both.)
+"""Train the price-recommendation model (and the fraud anomaly model).
 
 Price model
 -----------
@@ -18,15 +18,14 @@ from pathlib import Path
 import joblib
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import HistGradientBoostingRegressor, RandomForestRegressor
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.ensemble import HistGradientBoostingRegressor, IsolationForest
+from sklearn.metrics import mean_absolute_error, r2_score
 from sklearn.model_selection import train_test_split
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from app.services.features import encode, monotonic_vector, resolve_original, FEATURE_NAMES  # noqa: E402
-from app.services.model_store import MODELS, PRICE_BUNDLE, METRICS_PATH  # noqa: E402
+from app.services.model_store import MODELS, PRICE_BUNDLE, FRAUD_BUNDLE, METRICS_PATH  # noqa: E402
 from training.generate_seed import make_rows  # noqa: E402
 
 REAL_DATA = ROOT.parent / "server" / "data" / "export-training.json"
@@ -108,21 +107,8 @@ def train_price():
         return {
             "MAE_inr": round(float(mean_absolute_error(truth, p)), 2),
             "MAPE_pct": round(float(np.mean(np.abs(p - truth) / np.clip(truth, 1, None)) * 100), 2),
-            "RMSE_inr": round(float(np.sqrt(mean_squared_error(truth, p))), 2),
             "R2": round(float(r2_score(truth, p)), 4),
         }
-
-    # Model comparison from the PDF (section 5): Linear Regression baseline, Random Forest (v1 suggestion),
-    # Gradient Boosting (served).  Same features, same log(price/MRP) target, same test split.
-    def candidate(model):
-        model.fit(X[train_idx], y[train_idx], sample_weight=w[train_idx])
-        return report(np.exp(model.predict(X[test_idx])) * originals[test_idx])
-
-    comparison = {
-        "LinearRegression": candidate(LinearRegression()),
-        "RandomForestRegressor": candidate(RandomForestRegressor(n_estimators=200, min_samples_leaf=3, random_state=42, n_jobs=-1)),
-        "HistGradientBoosting_q50 (served)": report(med),
-    }
 
     sale_mask = (df["listingType"].to_numpy()[test_idx] == "sale")
     metrics = {
@@ -133,9 +119,6 @@ def train_price():
             "MAPE_pct": round(float(np.mean(np.abs(med[sale_mask] - truth[sale_mask]) / truth[sale_mask]) * 100), 2),
         },
         "naive_baseline_test": report(base_pred),
-        "model_comparison_test": comparison,
-        "why_gradient_boosting": "about as accurate as RandomForest here, but also supports monotonic constraints (older never pricier) "
-        "and quantile loss, which gives the fair-price band directly",
         "interval_80pct_coverage": round(float(np.mean((truth >= lo) & (truth <= hi))), 3),
         "cqr_log_offset": round(cqr_offset, 4),
         "n_train": int(len(train_idx)),
@@ -153,9 +136,32 @@ def train_price():
     print(json.dumps({k: v for k, v in metrics.items() if k != "features"}, indent=2))
 
 
+def train_fraud():
+    rng = np.random.default_rng(42)
+    typical = np.column_stack(
+        [
+            rng.normal(1500, 400, 400), rng.normal(4000, 800, 400), rng.normal(1.0, 0.15, 400),
+            rng.normal(0.65, 0.12, 400), rng.normal(28, 8, 400), rng.normal(90, 30, 400),
+            rng.integers(0, 2, 400), rng.integers(0, 2, 400), rng.integers(0, 2, 400),
+            rng.integers(0, 1, 400), rng.integers(0, 3, 400), rng.normal(120, 40, 400), rng.integers(0, 2, 400),
+        ]
+    )
+    anomalies = np.array(
+        [
+            [9000, 79900, 0.2, 0.11, 18, 20, 4, 3, 6, 2, 8, 0.2, 0],
+            [8900, 79900, 0.18, 0.11, 18, 20, 4, 3, 5, 1, 7, 0.4, 0],
+            [200, 45000, 0.05, 0.004, 12, 12, 3, 3, 8, 1, 10, 1, 0],
+        ]
+    )
+    iforest = IsolationForest(n_estimators=200, contamination=0.04, random_state=42)
+    iforest.fit(np.vstack([typical, anomalies]))
+    joblib.dump({"model": iforest}, FRAUD_BUNDLE)
+
+
 def main():
     train_price()
-    print(f"Saved {PRICE_BUNDLE}")
+    train_fraud()
+    print(f"Saved {PRICE_BUNDLE} and {FRAUD_BUNDLE}")
 
 
 if __name__ == "__main__":

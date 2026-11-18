@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
-import { ShieldCheck, Star, ListChecks, Mail, MapPin, LogOut, Pencil, Gauge, Flag } from 'lucide-react'
+import { ShieldCheck, Star, ListChecks, Mail, MapPin, LogOut } from 'lucide-react'
 import Avatar from '../components/Avatar'
-import AvatarBuilder from '../components/AvatarBuilder'
 import WashiTape from '../components/WashiTape'
 import { api } from '../api'
 import { useAuth } from '../auth'
@@ -13,27 +12,6 @@ export default function Profile() {
   const [trust, setTrust] = useState(null)
   const [locMsg, setLocMsg] = useState('')
   const [enabled, setEnabled] = useState(Boolean(user?.locationSharingEnabled))
-  const [editingAvatar, setEditingAvatar] = useState(false)
-  const [editingInfo, setEditingInfo] = useState(false)
-  const [form, setForm] = useState({ name: user?.name || '', hostel: user?.hostel || '' })
-  const [infoMsg, setInfoMsg] = useState('')
-  const [myReports, setMyReports] = useState([])
-
-  useEffect(() => {
-    api.myReports().then(setMyReports).catch(() => setMyReports([]))
-  }, [])
-
-  const saveInfo = async (e) => {
-    e.preventDefault()
-    try {
-      await api.updateProfile(form)
-      await refresh()
-      setEditingInfo(false)
-      setInfoMsg('Profile updated')
-    } catch (err) {
-      setInfoMsg(err.message)
-    }
-  }
 
   useEffect(() => {
     api.getReviews().then(setReviews).catch(() => setReviews([]))
@@ -104,10 +82,7 @@ export default function Profile() {
       <div className="relative bg-paper-card border-[1.5px] border-ink rounded-md p-6" style={{ transform: 'rotate(-0.5deg)' }}>
         <WashiTape color="yellow" rotate={-6} className="-top-2.5 left-10" width={60} />
         <div className="flex items-center gap-4">
-          <button type="button" onClick={() => setEditingAvatar((v) => !v)} className="relative group" title="Edit avatar">
-            <Avatar emoji={user.avatar} config={user.avatarConfig} size="xl" rotate={-3} />
-            <span className="absolute -bottom-1 -right-1 bg-ink text-paper rounded-full p-1"><Pencil size={11} /></span>
-          </button>
+          <Avatar emoji={user.avatar} size="xl" rotate={-3} />
           <div>
             <div className="flex items-center gap-2">
               <h1 className="font-display font-bold text-xl">{user.name}</h1>
@@ -117,37 +92,9 @@ export default function Profile() {
             <p className={`text-[11px] font-mono mt-1 uppercase ${
               status === 'verified' ? 'text-moss-ink' : status === 'failed' ? 'text-coral-ink' : 'text-yellow-ink'
             }`}>{status.replace('_', ' ')}</p>
-            {user.hostel && <p className="text-[11px] text-ink-soft mt-0.5">{user.hostel}</p>}
             {user.isSeed && <p className="text-[11px] text-ink-soft mt-1">Demo/seed account</p>}
-            <button type="button" onClick={() => { setForm({ name: user.name, hostel: user.hostel || '' }); setEditingInfo((v) => !v) }} className="text-[11px] underline text-ink-soft mt-1">
-              Edit name / hostel
-            </button>
           </div>
         </div>
-
-        {editingInfo && (
-          <form onSubmit={saveInfo} className="mt-4 flex flex-wrap gap-2 items-end">
-            <label className="text-[11px] text-ink-soft">Display name
-              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="block bg-white border-[1.5px] border-ink rounded-md px-2 py-1 text-sm" />
-            </label>
-            <label className="text-[11px] text-ink-soft">Hostel
-              <input value={form.hostel} onChange={(e) => setForm({ ...form, hostel: e.target.value })} className="block bg-white border-[1.5px] border-ink rounded-md px-2 py-1 text-sm" />
-            </label>
-            <button className="bg-ink text-paper rounded-full px-3 py-1.5 text-xs">Save</button>
-          </form>
-        )}
-        {infoMsg && <p className="text-xs text-ink-soft mt-2">{infoMsg}</p>}
-
-        {editingAvatar && (
-          <div className="mt-5 border-t border-line pt-4">
-            <p className="text-xs text-ink-soft mb-3">Build your campus identity from parts — no real photo needed.</p>
-            <AvatarBuilder
-              initial={user.avatarConfig}
-              onCancel={() => setEditingAvatar(false)}
-              onSaved={async () => { await refresh(); setEditingAvatar(false) }}
-            />
-          </div>
-        )}
 
         <div className="grid grid-cols-3 gap-3 mt-6">
           <div className="bg-moss-bg border border-moss-ink/30 rounded-md p-3 text-center">
@@ -165,25 +112,6 @@ export default function Profile() {
         </div>
         <p className="text-[11px] text-ink-soft mt-3">Trust score is accumulated reliability, not a guarantee. It is separate from listing fraud risk.</p>
       </div>
-
-      {trust?.components && <TrustBreakdown trust={trust} />}
-
-      {myReports.length > 0 && (
-        <div className="mt-6 bg-white border-[1.5px] border-ink rounded-md p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Flag size={15} />
-            <h2 className="font-display font-semibold text-base">Reports you filed</h2>
-          </div>
-          <ul className="space-y-1.5">
-            {myReports.slice(0, 6).map((r) => (
-              <li key={r.id} className="text-xs flex justify-between gap-3">
-                <span className="truncate">{r.reason}</span>
-                <span className={`font-mono shrink-0 ${r.status === 'confirmed' ? 'text-moss-ink' : r.status === 'dismissed' ? 'text-ink-soft' : 'text-yellow-ink'}`}>{r.status}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
 
       <div className="mt-6 bg-white border-[1.5px] border-ink rounded-md p-4">
         <div className="flex items-center gap-2 mb-2">
@@ -228,65 +156,6 @@ export default function Profile() {
           ))}
         </div>
       </div>
-    </div>
-  )
-}
-
-const PARTS = [
-  ['verification', 'Verified college email'],
-  ['reviews', 'Reviews & rating'],
-  ['completedTransactions', 'Completed transactions'],
-  ['onTimeReturns', 'On-time returns'],
-  ['accountAge', 'Account age'],
-  ['negativeReports', 'Reports (confirmed weigh most)'],
-]
-
-function TrustBreakdown({ trust }) {
-  const c = trust.contributions || {}
-  const max = trust.weights || {}
-  const maxFor = { verification: max.V, reviews: max.R, completedTransactions: max.C, onTimeReturns: max.O, accountAge: max.A, negativeReports: max.F }
-  return (
-    <div className="mt-6 bg-white border-[1.5px] border-ink rounded-md p-4">
-      <div className="flex items-center gap-2 mb-1">
-        <Gauge size={16} />
-        <h2 className="font-display font-semibold text-base">How your trust score is calculated</h2>
-      </div>
-      <p className="text-xs text-ink-soft mb-1">
-        <span className="font-mono font-semibold text-ink">{trust.trustScore}/100</span> · {trust.label}
-      </p>
-      <p className="text-[11px] font-mono text-ink-soft mb-3">{trust.formula}</p>
-      <div className="space-y-2">
-        {PARTS.map(([key, label]) => {
-          const v = Number(c[key] || 0)
-          const m = Number(maxFor[key] || 1)
-          const neg = v < 0
-          return (
-            <div key={key}>
-              <div className="flex justify-between text-[11px]">
-                <span>{label}</span>
-                <span className={`font-mono ${neg ? 'text-coral-ink' : 'text-moss-ink'}`}>{v > 0 ? '+' : ''}{v} / {neg ? '-' : ''}{m}</span>
-              </div>
-              <div className="h-1.5 bg-paper rounded-full overflow-hidden">
-                <div className={`h-full ${neg ? 'bg-tape-coral' : 'bg-moss-ink/70'}`} style={{ width: `${Math.min(100, (Math.abs(v) / m) * 100)}%` }} />
-              </div>
-            </div>
-          )
-        })}
-      </div>
-      {trust.history?.length > 0 && (
-        <details className="mt-3">
-          <summary className="text-[11px] text-ink-soft cursor-pointer">Score history (audit trail)</summary>
-          <ul className="mt-2 space-y-1">
-            {trust.history.map((h, i) => (
-              <li key={i} className="text-[11px] flex justify-between gap-2">
-                <span className="text-ink-soft">{new Date(h.at).toLocaleDateString()} · {h.reason}</span>
-                <span className="font-mono">{h.before ?? '—'} → {h.after}</span>
-              </li>
-            ))}
-          </ul>
-        </details>
-      )}
-      <p className="text-[10.5px] text-ink-soft mt-3">{trust.disclaimer}</p>
     </div>
   )
 }

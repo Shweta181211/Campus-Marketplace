@@ -54,7 +54,7 @@ export default function Sidebar({ open, onClose, user }) {
                 `}
               >
                 <ShieldAlert size={17} />
-                Admin console
+                Admin fraud review
               </NavLink>
             </div>
           )}

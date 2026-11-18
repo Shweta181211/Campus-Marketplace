@@ -4,16 +4,6 @@ import { Plus, Eye, MessageCircle, MapPin } from 'lucide-react'
 import { hydrateListings } from '../data/mockData'
 import { api } from '../api'
 import { getBrowserPosition, thumb } from '../utils/geo'
-import VerifyListing from '../components/VerifyListing'
-
-const STATUS_STYLE = {
-  active: 'bg-moss-bg text-moss-ink border-moss-ink/30',
-  verification: 'bg-yellow-bg text-yellow-ink border-yellow-ink/30',
-  held: 'bg-coral-bg text-coral-ink border-coral-ink/30',
-  reserved: 'bg-sky-bg text-sky-ink border-sky-ink/30',
-  sold: 'bg-white text-ink-soft border-ink/20',
-}
-const STATUS_LABEL = { verification: 'needs verification', held: 'under admin review' }
 
 export default function MyListings({ myListings, onOpenProduct }) {
   const navigate = useNavigate()
@@ -105,23 +95,9 @@ export default function MyListings({ myListings, onOpenProduct }) {
                   {item.type === 'lend' || item.listingType === 'lend' ? 'Lending' : 'Selling'} · ₹{item.price}
                   {(item.type === 'lend' || item.listingType === 'lend') && `/${item.lendUnit || 'day'}`}
                 </p>
-                <span className={`inline-block text-[10.5px] font-mono mt-1.5 px-2 py-0.5 rounded-full border ${STATUS_STYLE[item.status] || STATUS_STYLE.active}`}>
-                  {STATUS_LABEL[item.status] || item.status || 'active'}
+                <span className="inline-block text-[10.5px] font-mono mt-1.5 px-2 py-0.5 rounded-full bg-moss-bg text-moss-ink border border-moss-ink/30">
+                  {item.status || 'active'}
                 </span>
-                {item.status === 'held' && (
-                  <p className="text-[11px] text-ink-soft mt-1">
-                    {item.heldReason === 'reports'
-                      ? 'Several students reported this listing. An admin will review it soon.'
-                      : item.heldReason === 'suspension'
-                        ? 'Hidden while your account is suspended.'
-                        : `Held by fraud screening${item.fraudReasons?.length ? `: ${item.fraudReasons.map((r) => r.text).join('; ')}` : ''}. An admin will review it.`}
-                  </p>
-                )}
-                {item.status === 'verification' && item.id && (
-                  <div className="mt-2 max-w-sm">
-                    <VerifyListing listingId={item.id} compact onVerified={refresh} />
-                  </div>
-                )}
               </div>
               <div className="flex items-center gap-3 text-ink-soft text-xs shrink-0">
                 <span className="flex items-center gap-1"><Eye size={13} /> {item.views ?? 12 + i * 4}</span>

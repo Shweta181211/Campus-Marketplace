@@ -1,44 +1,21 @@
 {
   "model": "HistGradientBoosting quantile (q10/q50/q90) on log(price/MRP), monotone constraints",
   "test_overall": {
-    "MAE_inr": 333.99,
-    "MAPE_pct": 8.71,
-    "RMSE_inr": 883.63,
-    "R2": 0.986
+    "MAE_inr": 331.13,
+    "MAPE_pct": 8.67,
+    "R2": 0.9868
   },
   "test_sale_only": {
-    "MAE_inr": 405.38,
-    "MAPE_pct": 8.54
+    "MAE_inr": 401.94,
+    "MAPE_pct": 8.49
   },
   "naive_baseline_test": {
     "MAE_inr": 818.61,
     "MAPE_pct": 43.92,
-    "RMSE_inr": 1874.9,
     "R2": 0.9371
   },
-  "model_comparison_test": {
-    "LinearRegression": {
-      "MAE_inr": 513.44,
-      "MAPE_pct": 17.21,
-      "RMSE_inr": 1282.99,
-      "R2": 0.9705
-    },
-    "RandomForestRegressor": {
-      "MAE_inr": 333.25,
-      "MAPE_pct": 8.97,
-      "RMSE_inr": 879.48,
-      "R2": 0.9862
-    },
-    "HistGradientBoosting_q50 (served)": {
-      "MAE_inr": 333.99,
-      "MAPE_pct": 8.71,
-      "RMSE_inr": 883.63,
-      "R2": 0.986
-    }
-  },
-  "why_gradient_boosting": "about as accurate as RandomForest here, but also supports monotonic constraints (older never pricier) and quantile loss, which gives the fair-price band directly",
-  "interval_80pct_coverage": 0.79,
-  "cqr_log_offset": 0.0216,
+  "interval_80pct_coverage": 0.767,
+  "cqr_log_offset": 0.0154,
   "n_train": 4800,
   "n_test": 1200,
   "n_real_rows": 0,

@@ -1,4 +1,3 @@
-import crypto from 'crypto'
 import { Router } from 'express'
 import multer from 'multer'
 import rateLimit from 'express-rate-limit'
@@ -77,8 +76,7 @@ router.post('/images', requireAuth, requireVerified, uploadLimiter, (req, res) =
         }
         try {
           const asset = await saveImage(file.buffer, { ownerId: req.user._id, kind: 'listings' })
-          const contentHash = crypto.createHash('sha256').update(file.buffer).digest('hex')
-          const doc = await Upload.create({ ...asset, ownerId: req.user._id, contentHash })
+          const doc = await Upload.create({ ...asset, ownerId: req.user._id })
           saved.push(serialize(doc))
         } catch (e) {
           console.error('image upload failed', e.message)
