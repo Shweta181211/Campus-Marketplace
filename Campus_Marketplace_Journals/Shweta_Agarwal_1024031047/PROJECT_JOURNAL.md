@@ -1,21 +1,4 @@
-# Campus Marketplace — Project Journal
-
-**Student:** Shweta Agarwal (1024031047)
-**Group:** 3C73, BE Third Year, CSE
-**Course:** UCS503 - Software Engineering
-**Project:** Campus Marketplace (Buy / Borrow / Sell / Lend web app)
-**Stack:** React (Vite) frontend · Express.js API · MongoDB (Mongoose) · Python/FastAPI ML services
-**My focus:** Frontend, frontend-backend integration, demo data, UI for the AI / fraud / payment / location features, the admin console, and documentation (README, report).
-
----
-
-## 1. Project goal
-
-Build a campus marketplace where verified students can browse listings, sell or lend items, chat, transact, manage a profile with trust scores, and (for admins) review a moderation queue. The UI existed first as a frontend-only prototype; the project then became a full-stack system. My part covered connecting the React frontend to the backend cleanly, making every screen work with real data, surfacing the AI, payment and location features in the interface, and making sure the app looked and worked properly for demos, not just in theory.
-
----
-
-## 2. Problems I worked on and how they were overcome
+Problems I worked on and how they were overcome
 
 ### Problem 1 — Frontend icons could not be stored in MongoDB
 
